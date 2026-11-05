@@ -21,6 +21,12 @@ export type Branding = {
   primaryForeground: string;
   primaryColorDark: string;
   primaryForegroundDark: string;
+  accentColor: string;
+  accentColorDark: string;
+  navColor: string;
+  navColorDark: string;
+  navForeground: string;
+  navForegroundDark: string;
   sourceUrl: string;
   footer: {
     copyright: string;

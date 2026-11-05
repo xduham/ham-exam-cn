@@ -16,8 +16,11 @@
 | `favicon` | favicon 路径 |
 | `ogImage` | 社交分享图路径；建议用 1200×630 的 PNG |
 | `themeColor` / `themeColorDark` | 浏览器地址栏主题色（浅色 / 深色） |
-| `primaryColor` / `primaryColorDark` | 主色，注入为 `--brand-primary`（浅色 / 深色） |
-| `primaryForeground` / `primaryForegroundDark` | 主色上的文字颜色（浅色 / 深色） |
+| `primaryColor` / `primaryColorDark` | 主按钮色，注入为 `--brand-primary`（浅色 / 深色） |
+| `primaryForeground` / `primaryForegroundDark` | 主按钮上的文字颜色 |
+| `accentColor` / `accentColorDark` | 链接、选中态和焦点色（浅色 / 深色） |
+| `navColor` / `navColorDark` | 顶部导航背景色 |
+| `navForeground` / `navForegroundDark` | 顶部导航文字色 |
 | `sourceUrl` | 源码仓库地址，页脚显示“源代码” |
 | `footer.copyright` | 页脚版权 |
 | `footer.links` | 页脚链接数组 `{ label, href }` |

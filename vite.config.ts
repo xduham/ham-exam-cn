@@ -51,6 +51,12 @@ function brandingHtml(base: string, siteUrl: string): Plugin {
       result = setToken(result, "%PRIMARY_FG%", branding.primaryForeground);
       result = setToken(result, "%PRIMARY_DARK%", branding.primaryColorDark);
       result = setToken(result, "%PRIMARY_FG_DARK%", branding.primaryForegroundDark);
+      result = setToken(result, "%ACCENT%", branding.accentColor);
+      result = setToken(result, "%ACCENT_DARK%", branding.accentColorDark);
+      result = setToken(result, "%NAV%", branding.navColor);
+      result = setToken(result, "%NAV_DARK%", branding.navColorDark);
+      result = setToken(result, "%NAV_FG%", branding.navForeground);
+      result = setToken(result, "%NAV_FG_DARK%", branding.navForegroundDark);
       result = setToken(result, "%BASE%", normalizedBase);
       result = setToken(result, "%FAVICON%", assetPath(branding.favicon));
       result = setToken(result, "%LOGO%", assetPath(branding.logo));
