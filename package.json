@@ -1,0 +1,30 @@
+{
+  "name": "ham-exam-cn",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "MPL-2.0",
+  "description": "业余无线电操作证考试练习（西安电子科技大学「半部电台」业余无线电社）",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "data:build": "node scripts/build-data.mjs"
+  },
+  "dependencies": {
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.1",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.2.1",
+    "typescript": "^6.0.3",
+    "vite": "^8.3.6"
+  },
+  "engines": {
+    "node": "^24.18.0"
+  }
+}

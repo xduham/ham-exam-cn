@@ -1,0 +1,40 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
+<!doctype html>
+<html lang="%LANG%">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>%SITE_NAME%</title>
+    <meta name="description" content="%SITE_DESCRIPTION%" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="%THEME_COLOR%" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="%THEME_COLOR_DARK%" />
+    <link rel="icon" href="%FAVICON%" />
+    <link rel="apple-touch-icon" href="%FAVICON%" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="%SITE_NAME%" />
+    <meta property="og:description" content="%SITE_DESCRIPTION%" />
+    <meta property="og:image" content="%OG_IMAGE_URL%" />
+    <meta property="og:url" content="%SITE_URL%" />
+    <meta property="og:locale" content="zh_CN" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="%SITE_NAME%" />
+    <meta name="twitter:description" content="%SITE_DESCRIPTION%" />
+    <meta name="twitter:image" content="%OG_IMAGE_URL%" />
+    <style>
+      :root {
+        --brand-primary: %PRIMARY%;
+        --brand-primary-fg: %PRIMARY_FG%;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --brand-primary: %PRIMARY_DARK%;
+          --brand-primary-fg: %PRIMARY_FG_DARK%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

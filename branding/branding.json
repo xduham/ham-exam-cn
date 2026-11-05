@@ -1,0 +1,23 @@
+{
+  "siteName": "西安电子科技大学「半部电台」业余无线电社",
+  "shortName": "半部电台考试",
+  "description": "业余无线电操作证考试练习 · A/B/C 三类题库",
+  "locale": "zh-CN",
+  "logo": "branding/logo.svg",
+  "favicon": "branding/favicon.svg",
+  "ogImage": "branding/og-image.svg",
+  "themeColor": "#0f4c81",
+  "themeColorDark": "#0d1117",
+  "primaryColor": "#0f4c81",
+  "primaryForeground": "#ffffff",
+  "primaryColorDark": "#8ab8e6",
+  "primaryForegroundDark": "#0b1220",
+  "sourceUrl": "https://github.com/xduham/ham-exam-cn",
+  "footer": {
+    "copyright": "© 2026 西安电子科技大学「半部电台」业余无线电社",
+    "links": [
+      { "label": "社团 GitHub", "href": "https://github.com/xduham" }
+    ],
+    "notice": "题库来自 CRAC，解析由 AI 生成，仅供参考。所有答题数据仅保存在本机浏览器。"
+  }
+}

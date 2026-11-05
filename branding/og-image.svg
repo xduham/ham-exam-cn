@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#0f4c81"/>
+  <g fill="none" stroke="#ffffff" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" opacity=".9">
+    <path d="M160 430V270l110-70 110 70v160"/>
+    <path d="M220 430V330h100v100"/>
+    <path d="M420 250c34 0 62 28 62 62"/>
+    <path d="M420 190c66 0 120 54 120 120"/>
+  </g>
+  <text x="620" y="300" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="72" font-weight="700">半部电台</text>
+  <text x="620" y="375" fill="#dbeafe" font-family="'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="34">业余无线电操作证考试练习</text>
+  <text x="620" y="435" fill="#bfdbfe" font-family="'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="26">A / B / C 三类题库 · 练习与模拟考试</text>
+</svg>

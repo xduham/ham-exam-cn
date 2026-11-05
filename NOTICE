@@ -1,0 +1,29 @@
+ham-exam-cn
+Copyright (C) 2026 西安电子科技大学「半部电台」业余无线电社
+
+This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+License scope
+-------------
+- Source code (src/, scripts/, vite.config.ts, index.html): MPL-2.0.
+- Question data (data/, and the generated public/questions/): WTFPL.
+  See data/COPYING. Upstream:
+  https://github.com/AlliotTech/crac-amateur-radio-exam-questions-2025-csv
+- Branding (branding/, and the generated public/branding/): copyright the
+  club, all rights reserved. It is not covered by the MPL-2.0. Replace it
+  before deploying your own instance.
+
+Third-party dependencies
+------------------------
+React, Vite, TypeScript and other dependencies retain their own licenses.
+See package.json and the respective packages for details.
+
+Data attribution
+----------------
+The question bank is based on the CRAC amateur radio operator certificate
+question bank (2025 edition), converted to CSV by the upstream project
+listed above. AI-generated explanations and mnemonics come from the same
+dataset and are provided for study reference only. This project is not an
+official CRAC application.
