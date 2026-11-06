@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
-import { copyFileSync, mkdirSync, readdirSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import react from "@vitejs/plugin-react";
@@ -8,6 +9,30 @@ import { defineConfig, loadEnv, type Plugin } from "vite";
 import branding from "./branding/branding.json" with { type: "json" };
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url));
+
+/** Hash the question bank and its images so updated data gets a new URL. */
+function questionDataVersion(): string {
+  const questionsDir = path.join(rootDir, "public", "questions");
+  if (!existsSync(questionsDir)) return "0";
+
+  const hash = createHash("sha256");
+  const walk = (current: string): void => {
+    const entries = readdirSync(current, { withFileTypes: true }).sort((left, right) =>
+      left.name.localeCompare(right.name),
+    );
+    for (const entry of entries) {
+      const full = path.join(current, entry.name);
+      if (entry.isDirectory()) {
+        walk(full);
+      } else if (entry.isFile()) {
+        hash.update(path.relative(questionsDir, full).split(path.sep).join("/"));
+        hash.update(readFileSync(full));
+      }
+    }
+  };
+  walk(questionsDir);
+  return hash.digest("hex").slice(0, 10);
+}
 
 function copyBrandingAssets(): Plugin {
   return {
@@ -75,6 +100,9 @@ export default defineConfig(({ mode }) => {
   return {
     base,
     plugins: [react(), copyBrandingAssets(), brandingHtml(base, siteUrl)],
+    define: {
+      __DATA_VERSION__: JSON.stringify(questionDataVersion()),
+    },
     server: {
       host: true,
       port: 3000,

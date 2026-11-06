@@ -10,7 +10,7 @@ export function loadBank(bank: Bank): Promise<Question[]> {
   const cached = bankCache.get(bank);
   if (cached) return cached;
 
-  const request = fetch(`${import.meta.env.BASE_URL}questions/${bank}.json`)
+  const request = fetch(`${import.meta.env.BASE_URL}questions/${bank}.json?v=${__DATA_VERSION__}`)
     .then(async (response) => {
       if (!response.ok) {
         throw new Error(`题库 ${bank} 加载失败（${response.status}）`);
@@ -31,7 +31,9 @@ export function loadBank(bank: Bank): Promise<Question[]> {
 }
 
 export function imageUrl(question: Question): string | null {
-  return question.imageUrl ? asset(`questions/${question.imageUrl}`) : null;
+  return question.imageUrl
+    ? `${asset(`questions/${question.imageUrl}`)}?v=${__DATA_VERSION__}`
+    : null;
 }
 
 export function sortedKeys(keys: number[]): number[] {

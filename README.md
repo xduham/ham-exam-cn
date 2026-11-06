@@ -7,7 +7,7 @@ XDUham-club的业余无线电操作证考试练习站。
 ## 功能
 
 - A / B / C 三类题库，按真实规则抽题
-- 顺序练习、随机练习、断点续做；练习进度条可拖动快速跳题
+- 顺序练习、随机练习、断点续做；练习进度条可拖动快速跳题，可标记模糊题
 - 练习可开关选项乱序；模拟考试始终乱序。选项内容用数字 id 标识，解析通过 token 跟随当前显示字母
 - 题号 / 关键词搜索（顺序练习）
 - 模拟考试：计时、答题卡、标记、交卷、成绩、逐题回顾
@@ -97,7 +97,7 @@ npm run data:build
 
 ## 部署到 EdgeOne Makers
 
-仓库根目录的 `edgeone.json`：
+仓库根目录的 `edgeone.json` 包含构建配置和题库缓存规则，构建部分如下：
 
 ```json
 {
@@ -118,6 +118,8 @@ npm run data:build
 - 环境变量：
   - `VITE_SITE_URL=https://exam.xduham.club`
   - `VITE_BASE_PATH=/`
+
+`edgeone.json` 同时为 `/questions/*.json` 和 `/questions/images/*` 设置 6 个月浏览器与边缘缓存。应用构建时会对题库内容生成 hash 并拼到请求 URL（`?v=<hash>`）上，数据更新后自动换新 URL，不会读到旧缓存。
 
 题库和图片与站点同源，部署后自动走 EdgeOne 边缘缓存；每次部署会失效旧缓存。没有前端路由，不需要 SPA rewrite。
 

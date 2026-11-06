@@ -2,5 +2,35 @@
   "buildCommand": "npm run build",
   "installCommand": "npm ci",
   "outputDirectory": "dist",
-  "nodeVersion": "24.18.0"
+  "nodeVersion": "24.18.0",
+  "headers": [
+    {
+      "source": "/questions/*.json",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=15552000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/questions/images/*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=15552000, immutable"
+        }
+      ]
+    }
+  ],
+  "caches": [
+    {
+      "source": "/questions/*.json",
+      "cacheTtl": 15552000
+    },
+    {
+      "source": "/questions/images/*",
+      "cacheTtl": 15552000
+    }
+  ]
 }
