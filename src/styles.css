@@ -17,6 +17,7 @@
   --gh-danger-btn: #cf222e;
   --gh-yellow: #9a6700;
   --gh-success-fg: #1a7f37;
+  --gh-success-bg: #1f883d;
   --gh-danger-fg: #cf222e;
   --gh-warning-fg: #9a6700;
   --gh-fg: #1f2328;
@@ -59,6 +60,7 @@
     --gh-danger-btn: #da3633;
     --gh-yellow: #d29922;
     --gh-success-fg: #3fb950;
+    --gh-success-bg: #238636;
     --gh-danger-fg: #f85149;
     --gh-warning-fg: #d29922;
     --gh-fg: #e6edf3;
@@ -813,8 +815,8 @@ p {
 }
 
 .option.correct .option-key {
-  border-color: var(--gh-success-fg);
-  background: var(--gh-success-fg);
+  border-color: var(--gh-success-bg);
+  background: var(--gh-success-bg);
   color: #ffffff;
 }
 
@@ -829,8 +831,8 @@ p {
 }
 
 .option.wrong .option-key {
-  border-color: var(--gh-red);
-  background: var(--gh-red);
+  border-color: var(--gh-danger-btn);
+  background: var(--gh-danger-btn);
   color: #ffffff;
 }
 
@@ -996,6 +998,10 @@ p {
   background: var(--gh-input-bg);
   color: var(--gh-fg);
   font-size: 14px;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .input::placeholder {
@@ -1405,6 +1411,20 @@ p {
 @media (prefers-color-scheme: dark) {
   .modal-backdrop {
     background: rgba(1, 4, 9, 0.8);
+  }
+
+  /* GitHub's dark buttons get brighter on hover instead of darker. */
+  .btn-primary:hover:not(:disabled),
+  .btn-danger:hover:not(:disabled) {
+    filter: none;
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--gh-green) 90%, #ffffff);
+  }
+
+  .btn-danger:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--gh-danger-btn) 90%, #ffffff);
   }
 }
 
