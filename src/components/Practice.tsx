@@ -33,6 +33,7 @@ export function Practice({ bank, kind, onExit }: Props) {
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number[]>>({});
   const [revealedKeys, setRevealedKeys] = useState<string[]>([]);
+  const [fuzzyKeys, setFuzzyKeys] = useState<string[]>([]);
   const [autoCheck, setAutoCheck] = useState(false);
   const [shuffleOptions, setShuffleOptions] = useState(true);
   const [optionSeed, setOptionSeed] = useState(0);
@@ -75,6 +76,7 @@ export function Practice({ bank, kind, onExit }: Props) {
         let nextIndex = 0;
         let nextAnswers: Record<string, number[]> = {};
         let nextRevealed: string[] = [];
+        let nextFuzzy: string[] = [];
         let nextAuto = false;
         let nextShuffle = true;
         let nextOptionSeed = randomSeed();
@@ -96,6 +98,7 @@ export function Practice({ bank, kind, onExit }: Props) {
             Object.entries(saved.answers).filter(([key]) => byKey.has(key)),
           );
           nextRevealed = saved.revealedKeys.filter((key) => byKey.has(key));
+          nextFuzzy = saved.fuzzyKeys.filter((key) => byKey.has(key));
           nextAuto = saved.autoCheck;
           nextShuffle = saved.shuffleOptions !== false;
           nextOptionSeed = saved.optionSeed || randomSeed();
@@ -106,6 +109,7 @@ export function Practice({ bank, kind, onExit }: Props) {
         setIndex(nextIndex);
         setAnswers(nextAnswers);
         setRevealedKeys(nextRevealed);
+        setFuzzyKeys(nextFuzzy);
         setAutoCheck(nextAuto);
         setShuffleOptions(nextShuffle);
         setOptionSeed(nextOptionSeed);
@@ -132,6 +136,7 @@ export function Practice({ bank, kind, onExit }: Props) {
       index,
       answers,
       revealedKeys,
+      fuzzyKeys,
       autoCheck,
       shuffleOptions,
       optionSeed,
@@ -145,6 +150,7 @@ export function Practice({ bank, kind, onExit }: Props) {
     index,
     answers,
     revealedKeys,
+    fuzzyKeys,
     autoCheck,
     shuffleOptions,
     optionSeed,
@@ -158,6 +164,7 @@ export function Practice({ bank, kind, onExit }: Props) {
   const currentQuestion = currentKey ? byKey.get(currentKey) : undefined;
   const selected = currentKey ? (answers[currentKey] ?? []) : [];
   const revealed = currentKey ? revealedKeys.includes(currentKey) : false;
+  const fuzzy = currentKey ? fuzzyKeys.includes(currentKey) : false;
   const answeredCount = order.filter((key) => (answers[key] ?? []).length > 0).length;
 
   function reveal(question: Question, chosen: number[]): void {
@@ -198,6 +205,15 @@ export function Practice({ bank, kind, onExit }: Props) {
     if (!currentQuestion) return;
     toggleFavorite(bank, currentQuestion);
     forceRender((value) => value + 1);
+  }
+
+  function toggleFuzzy(): void {
+    if (!currentKey) return;
+    setFuzzyKeys((previous) =>
+      previous.includes(currentKey)
+        ? previous.filter((key) => key !== currentKey)
+        : [...previous, currentKey],
+    );
   }
 
   function goPrev(): void {
@@ -339,9 +355,17 @@ export function Practice({ bank, kind, onExit }: Props) {
         </span>
       </div>
 
-      <div className={revealed ? "bottom-bar" : "bottom-bar bottom-bar-3"}>
+      <div className={revealed ? "bottom-bar bottom-bar-3" : "bottom-bar bottom-bar-4"}>
         <button type="button" className="btn" onClick={goPrev} disabled={index === 0}>
           上一题
+        </button>
+        <button
+          type="button"
+          className={fuzzy ? "btn btn-secondary fuzzy-on" : "btn"}
+          onClick={toggleFuzzy}
+          aria-pressed={fuzzy}
+        >
+          {fuzzy ? "已模糊" : "模糊"}
         </button>
         {!revealed ? (
           <button type="button" className="btn btn-primary" onClick={handleCheck}>

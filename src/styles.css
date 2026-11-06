@@ -606,6 +606,17 @@ p {
   color: var(--gh-warning-fg);
 }
 
+.fuzzy-on {
+  border-color: color-mix(in srgb, var(--gh-yellow) 35%, var(--gh-border));
+  background: var(--gh-warning-subtle);
+  color: var(--gh-warning-fg);
+}
+
+.fuzzy-on:hover:not(:disabled) {
+  border-color: var(--gh-yellow);
+  background: var(--gh-warning-subtle);
+}
+
 /* Badges / labels */
 
 .badge {

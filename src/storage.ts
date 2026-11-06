@@ -58,6 +58,7 @@ export type PracticeState = {
   index: number;
   answers: Record<string, number[]>;
   revealedKeys: string[];
+  fuzzyKeys: string[];
   autoCheck: boolean;
   shuffleOptions: boolean;
   optionSeed: number;
@@ -98,6 +99,7 @@ export function loadPractice(bank: Bank): PracticeState | null {
     index: Math.max(0, Math.min(state.index ?? 0, state.order.length - 1)),
     answers: state.answers ?? {},
     revealedKeys: state.revealedKeys ?? [],
+    fuzzyKeys: Array.isArray(state.fuzzyKeys) ? state.fuzzyKeys : [],
     autoCheck: Boolean(state.autoCheck),
     shuffleOptions: state.shuffleOptions !== false,
     optionSeed: typeof state.optionSeed === "number" ? state.optionSeed : 0,

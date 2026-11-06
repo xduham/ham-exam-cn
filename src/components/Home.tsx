@@ -49,9 +49,6 @@ export function Home({
           选择 A / B / C 类题库，按真实规则练习或模拟考试。答案、解析与助记都在本地，随时可用。
         </p>
         <BankPicker value={bank} onChange={onBankChange} />
-        <p className="muted small">
-          {BANK_META[bank].label}：{BANK_META[bank].rule}。{BANK_META[bank].hint}。
-        </p>
       </section>
 
       {practiceVisible || examActive ? (
