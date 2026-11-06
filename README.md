@@ -1,27 +1,23 @@
 # ham-exam-cn
 
-XDUham-club的业余无线电操作证考试练习站。
+XDUham-club 的业余无线电操作证考试练习站。
 
-纯前端、无账号、无上传、无后端。题库随站点一起部署，练习进度、错题本、收藏和统计都保存在浏览器本地。
+在线站点：<https://exam.xduham.club>  
+
+纯前端、无账号、无上传、无后端。题库随站点部署，练习进度、错题本、收藏和统计都保存在浏览器本地。
 
 ## 功能
 
-- A / B / C 三类题库，按真实规则抽题
-- 顺序练习、随机练习、断点续做；练习进度条可拖动快速跳题，可标记模糊题
-- 练习可开关选项乱序；模拟考试始终乱序。选项内容用数字 id 标识，解析通过 token 跟随当前显示字母
+- A / B / C 三类题库，按真实规则练习与组卷
+- 练习：顺序 / 随机、断点续做、进度条拖动跳题、选项乱序开关、模糊标记（随练习断点保存）
 - 题号 / 关键词搜索（顺序练习）
 - 模拟考试：计时、答题卡、标记、交卷、成绩、逐题回顾
-- 答案解析与助记（来自公开数据集）
-- 错题本：练习/考试答错自动收录，错题练习答对后移出
-- 收藏：星标题目，随时组成收藏练习
-- 学习统计：练习正确率、模考次数、最佳成绩、通过次数
-- 手机优先，深色 / 浅色可手动切换，默认跟随系统
+- 解析与助记；错题本、收藏、学习统计
+- 手机优先，浅色 / 深色切换，默认跟随系统
 
 ## 技术栈
 
-- Vite 8 + React 19 + TypeScript 6
-- 一个 CSS 文件，无路由库、状态库、UI 库
-- 纯静态，构建产物在 `dist/`
+Vite 8 + React 19 + TypeScript 6；单个 CSS 文件，无路由/状态/UI 库；纯静态 `dist/`。
 
 ## 本地开发
 
@@ -37,30 +33,20 @@ npm run preview
 
 ## 题库数据
 
-`data/` 是题库源数据，采用 **WTFPL**（见 `data/COPYING`）。来源、上游 commit 和图片说明见 `data/SOURCE.md`。
+`data/` 采用 WTFPL（`data/COPYING`）。来源、上游 commit 和图片说明见 `data/SOURCE.md`。
 
-- `data/class_a.csv`、`class_b.csv`、`class_c.csv`：A / B / C 题库
-- `data/ai_explanations.json`：按题目 `I` 代码索引的解析与助记
-- `data/images/<J>.jpg`：按题号命名的题目图片
-- `data/key-map.json`：题目稳定 key 的唯一事实来源
+- `class_a.csv` / `class_b.csv` / `class_c.csv`：原始题库
+- `ai_explanations.json`：按 `I` 代码索引的解析/助记
+- `images/<J>.jpg`：题目图片
+- `key-map.json`：稳定题目 key 的唯一来源
 
-生成前端使用的 JSON：
+生成前端 JSON：
 
 ```bash
 npm run data:build
 ```
 
-脚本会：
-
-1. 解析 CSV，合并 AI 解析与助记。
-2. 按 `key-map.json` 复用已有 key，给新题分配 `A-0001` 这样的下一个序号。
-3. 把选项写成数字 id（1–4），`answer_keys` 使用同样的数字 id。
-4. 把解析里的选项字母引用转成 `{{id}}` / `{{1,3}}` token；`A类`、`D层`、`D触发器` 等技术字母保持原文。
-5. 复制图片，输出 `public/questions/{A,B,C}.json`。
-
-生成后的 `public/questions/` 需要提交。app 构建只跑 `vite build`，不依赖 `data:build`；题库 3–5 年才动一次，手动跑即可。
-
-题目 JSON 的核心结构：
+脚本按 `key-map.json` 复用/分配题目 key，把选项写成数字 id（1–4），`answer_keys` 使用同一组 id，并把解析中的选项字母引用转成 `{{id}}` / `{{1,3}}` token（`A类`、`D层` 等技术字母保持原文）。产物提交到 `public/questions/`。
 
 ```json
 {
@@ -75,65 +61,41 @@ npm run data:build
     { "key": 4, "text": "……" }
   ],
   "answer_keys": [1, 3],
-  "explanation": "……（{{1,3}}）……故{{4}}错；{{2}}项……"
+  "explanation": "……（{{1,3}}）……故{{4}}错……"
 }
 ```
 
-`options` 是题库源顺序，前端每次练习/考试按会话 seed 打乱显示顺序，并按显示位置生成 A/B/C/D 标签。解析中的 `{{id}}` 由前端替换成当前显示字母；没有 token 的 A–D 是内容字母，不会被替换。
+示例省略 `number` / `imageUrl` / `mnemonic`。`options` 是题库源顺序；前端负责显示顺序：练习默认乱序、可关闭，模拟考试始终乱序。显示标签按位置生成 A/B/C/D。解析中的 token 由前端替换为当前显示字母；没有 token 的 A–D 是内容字母，不会被替换。
 
-> 选项字母的含义已从 A–D 改为数字 id。旧版本保存在浏览器里的练习/考试断点会自动失效，错题本、收藏和统计保留。
+> 选项 id 从字母改为数字后，旧版练习/考试断点会自动失效；错题本、收藏和统计保留。
 
-> 上游 `images/` 目录里的 `0.jpg` 等文件是 LFS 指针，不是图片；真实图片在 `images_2/<J>.jpg`，本项目按 `J` 直接下载 `images_2` 中的文件。
+`npm run build` 不运行数据管线；题库变化时先运行 `npm run data:build`，再提交 `public/questions/` 和 `data/key-map.json`。
 
 ## 品牌层
 
-品牌全部放在 `branding/`，应用代码不写死社团名称、颜色或域名：
+品牌在 `branding/`，代码不写死社团名、颜色或域名；替换 `branding.json` 和三个 SVG 后重新构建即可。字段见 `branding/README.md`。
 
-- `branding/branding.json`：站点名、描述、Logo、主题色、页脚、源码地址
-- `branding/logo.svg`、`favicon.svg`、`og-image.svg`
-- 构建时 Vite 插件会把图片复制到 `public/branding/`，并把 `index.html` 中的占位符替换掉
+## 部署
 
-字段和替换方法见 `branding/README.md`。
+### EdgeOne Makers
 
-## 部署到 EdgeOne Makers
+导入 `xduham/ham-exam-cn`，使用仓库内的 `edgeone.json`：
 
-仓库根目录的 `edgeone.json` 包含构建配置和题库缓存规则，构建部分如下：
+- `npm ci` / `npm run build` / 输出 `dist` / Node `24.18.0`
+- 环境变量：`VITE_SITE_URL=https://exam.xduham.club`、`VITE_BASE_PATH=/`
+- 绑定域名 `exam.xduham.club`
 
-```json
-{
-  "buildCommand": "npm run build",
-  "installCommand": "npm ci",
-  "outputDirectory": "dist",
-  "nodeVersion": "24.18.0"
-}
+`edgeone.json` 为题库 JSON 和图片设置 6 个月浏览器/边缘缓存；构建时对题库内容生成 hash 并拼到 URL（`?v=<hash>`），数据更新自动换新 URL。无前端路由，不需要 SPA rewrite。
+
+### 其他静态托管
+
+Fork 后替换 `branding/`（可选替换 `data/` 并运行 `npm run data:build`），设置 `VITE_SITE_URL` 和 `VITE_BASE_PATH`，然后：
+
+```bash
+npm ci && npm run build
 ```
 
-在 EdgeOne Makers 中导入仓库，设置：
-
-- 框架预设：Vite（或自定义）
-- 安装命令：`npm ci`
-- 构建命令：`npm run build`
-- 输出目录：`dist`
-- Node 版本：`24.18.0`
-- 环境变量：
-  - `VITE_SITE_URL=https://exam.xduham.club`
-  - `VITE_BASE_PATH=/`
-
-`edgeone.json` 同时为 `/questions/*.json` 和 `/questions/images/*` 设置 6 个月浏览器与边缘缓存。应用构建时会对题库内容生成 hash 并拼到请求 URL（`?v=<hash>`）上，数据更新后自动换新 URL，不会读到旧缓存。
-
-题库和图片与站点同源，部署后自动走 EdgeOne 边缘缓存；每次部署会失效旧缓存。没有前端路由，不需要 SPA rewrite。
-
-## 自部署到其他静态托管
-
-1. Fork 本仓库。
-2. 替换 `branding/` 为你的组织品牌。
-3. 可选：替换 `data/` 为你的题库，然后运行 `npm run data:build`。
-4. 设置 `VITE_SITE_URL` 和 `VITE_BASE_PATH`（子路径部署时例如 `/ham-exam-cn/`）。
-5. `npm ci && npm run build`，把 `dist/` 部署到任意静态托管。
-
-所有资源路径都经过 `import.meta.env.BASE_URL`，因此 GitHub Pages 子路径也能工作。
-
-Windows Git Bash 会把 `/ham-exam-cn/` 当成文件路径转换，构建子路径时请加 `MSYS_NO_PATHCONV=1`：
+部署 `dist/`。子路径构建示例：
 
 ```bash
 MSYS_NO_PATHCONV=1 VITE_BASE_PATH=/ham-exam-cn/ npm run build
@@ -141,11 +103,9 @@ MSYS_NO_PATHCONV=1 VITE_BASE_PATH=/ham-exam-cn/ npm run build
 
 ## 许可
 
-- **代码**：MPL-2.0，见 `LICENSE`。
-- **题库数据**：WTFPL，见 `data/COPYING`。
-- **品牌素材**：版权归社团所有，不随 MPL-2.0 授权；自部署前请替换。
-
-MPL-2.0 是文件级 copyleft：修改过的 MPL 文件需要继续以 MPL-2.0 提供源码，新增文件可以按其他许可发布。页脚的“源代码”链接由 `branding.sourceUrl` 控制；如果你部署修改版，请把它改成你的源码地址，并按 MPL-2.0 向用户提供对应源码。
+- 代码：MPL-2.0（`LICENSE`，归属见 `NOTICE`）。修改过的 MPL 文件需继续以 MPL-2.0 提供源码；页脚“源代码”链接由 `branding.sourceUrl` 控制。
+- 题库数据：WTFPL（`data/COPYING`）。
+- 品牌素材：版权归社团所有，不随 MPL-2.0 授权；自部署前请替换。
 
 ## 声明
 
