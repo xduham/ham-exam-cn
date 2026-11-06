@@ -1,6 +1,5 @@
 /* SPDX-License-Identifier: MPL-2.0 */
 
-import { branding } from "../branding";
 import { favoriteCount, wrongCount } from "../collections";
 import { PRACTICE_LABELS } from "../labels";
 import { BANK_META, ruleFor } from "../rules";
@@ -45,7 +44,6 @@ export function Home({
   return (
     <div className="stack">
       <section className="card home-hero">
-        <p className="eyebrow">{branding.shortName}</p>
         <h1 className="hero-title">业余无线电操作证考试练习</h1>
         <p className="hero-sub">
           选择 A / B / C 类题库，按真实规则练习或模拟考试。答案、解析与助记都在本地，随时可用。

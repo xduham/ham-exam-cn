@@ -6,8 +6,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>%SITE_NAME%</title>
     <meta name="description" content="%SITE_DESCRIPTION%" />
-    <meta name="theme-color" media="(prefers-color-scheme: light)" content="%THEME_COLOR%" />
-    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="%THEME_COLOR_DARK%" />
+    <meta name="theme-color" content="%THEME_COLOR%" />
+    <script>
+      (function () {
+        var stored = null;
+        try {
+          stored = localStorage.getItem("ham-exam-cn:theme");
+        } catch (error) {}
+        if (stored !== "light" && stored !== "dark") stored = null;
+        var dark =
+          stored === "dark" ||
+          (!stored && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        document.documentElement.dataset.theme = dark ? "dark" : "light";
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute("content", dark ? "%THEME_COLOR_DARK%" : "%THEME_COLOR%");
+      })();
+    </script>
     <link rel="icon" href="%FAVICON%" />
     <link rel="apple-touch-icon" href="%FAVICON%" />
     <meta property="og:type" content="website" />
@@ -24,18 +38,14 @@
       :root {
         --brand-primary: %PRIMARY%;
         --brand-primary-fg: %PRIMARY_FG%;
+        --brand-primary-dark: %PRIMARY_DARK%;
+        --brand-primary-fg-dark: %PRIMARY_FG_DARK%;
         --brand-accent: %ACCENT%;
+        --brand-accent-dark: %ACCENT_DARK%;
         --brand-nav: %NAV%;
+        --brand-nav-dark: %NAV_DARK%;
         --brand-nav-fg: %NAV_FG%;
-      }
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --brand-primary-dark: %PRIMARY_DARK%;
-          --brand-primary-fg-dark: %PRIMARY_FG_DARK%;
-          --brand-accent-dark: %ACCENT_DARK%;
-          --brand-nav-dark: %NAV_DARK%;
-          --brand-nav-fg-dark: %NAV_FG_DARK%;
-        }
+        --brand-nav-fg-dark: %NAV_FG_DARK%;
       }
     </style>
   </head>

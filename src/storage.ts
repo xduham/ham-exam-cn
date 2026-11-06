@@ -59,6 +59,7 @@ export type PracticeState = {
   answers: Record<string, number[]>;
   revealedKeys: string[];
   autoCheck: boolean;
+  shuffleOptions: boolean;
   optionSeed: number;
   updatedAt: number;
 };
@@ -98,6 +99,7 @@ export function loadPractice(bank: Bank): PracticeState | null {
     answers: state.answers ?? {},
     revealedKeys: state.revealedKeys ?? [],
     autoCheck: Boolean(state.autoCheck),
+    shuffleOptions: state.shuffleOptions !== false,
     optionSeed: typeof state.optionSeed === "number" ? state.optionSeed : 0,
   };
 }

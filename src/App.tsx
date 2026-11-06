@@ -20,14 +20,56 @@ const VIEW_TITLES: Record<View, string> = {
   stats: "统计",
 };
 
+type Theme = "light" | "dark";
+const THEME_KEY = "ham-exam-cn:theme";
+
+function storedTheme(): Theme | null {
+  try {
+    const value = window.localStorage.getItem(THEME_KEY);
+    return value === "light" || value === "dark" ? value : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function App() {
   const [view, setView] = useState<View>("home");
   const [bank, setBank] = useState<Bank>(() => loadBankChoice());
   const [practiceKind, setPracticeKind] = useState<PracticeKind>("sequential");
+  const [theme, setTheme] = useState<Theme>(() =>
+    document.documentElement.dataset.theme === "dark" ? "dark" : "light",
+  );
 
   useEffect(() => {
     saveBankChoice(bank);
   }, [bank]);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    document
+      .querySelector('meta[name="theme-color"]')
+      ?.setAttribute("content", theme === "dark" ? branding.themeColorDark : branding.themeColor);
+  }, [theme]);
+
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleChange = (event: MediaQueryListEvent) => {
+      if (storedTheme()) return;
+      setTheme(event.matches ? "dark" : "light");
+    };
+    media.addEventListener("change", handleChange);
+    return () => media.removeEventListener("change", handleChange);
+  }, []);
+
+  function toggleTheme(): void {
+    const next: Theme = theme === "dark" ? "light" : "dark";
+    setTheme(next);
+    try {
+      window.localStorage.setItem(THEME_KEY, next);
+    } catch {
+      // Storage can be unavailable; the theme still applies for this session.
+    }
+  }
 
   useEffect(() => {
     const title = VIEW_TITLES[view];
@@ -63,6 +105,15 @@ export default function App() {
                 首页
               </button>
             )}
+            <button
+              type="button"
+              className="btn btn-icon btn-ghost theme-toggle"
+              onClick={toggleTheme}
+              aria-label={theme === "dark" ? "切换到浅色外观" : "切换到深色外观"}
+              title={theme === "dark" ? "切换到浅色外观" : "切换到深色外观"}
+            >
+              {theme === "dark" ? <SunIcon /> : <MoonIcon />}
+            </button>
           </div>
         </div>
       </header>
@@ -132,5 +183,41 @@ export default function App() {
         </div>
       </footer>
     </div>
+  );
+}
+
+function SunIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+    </svg>
+  );
+}
+
+function MoonIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" />
+    </svg>
   );
 }

@@ -34,6 +34,7 @@ export function Practice({ bank, kind, onExit }: Props) {
   const [answers, setAnswers] = useState<Record<string, number[]>>({});
   const [revealedKeys, setRevealedKeys] = useState<string[]>([]);
   const [autoCheck, setAutoCheck] = useState(false);
+  const [shuffleOptions, setShuffleOptions] = useState(true);
   const [optionSeed, setOptionSeed] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -75,6 +76,7 @@ export function Practice({ bank, kind, onExit }: Props) {
         let nextAnswers: Record<string, number[]> = {};
         let nextRevealed: string[] = [];
         let nextAuto = false;
+        let nextShuffle = true;
         let nextOptionSeed = randomSeed();
 
         if (canResume) {
@@ -95,6 +97,7 @@ export function Practice({ bank, kind, onExit }: Props) {
           );
           nextRevealed = saved.revealedKeys.filter((key) => byKey.has(key));
           nextAuto = saved.autoCheck;
+          nextShuffle = saved.shuffleOptions !== false;
           nextOptionSeed = saved.optionSeed || randomSeed();
         }
 
@@ -104,6 +107,7 @@ export function Practice({ bank, kind, onExit }: Props) {
         setAnswers(nextAnswers);
         setRevealedKeys(nextRevealed);
         setAutoCheck(nextAuto);
+        setShuffleOptions(nextShuffle);
         setOptionSeed(nextOptionSeed);
         setReady(true);
         setLoading(false);
@@ -129,10 +133,22 @@ export function Practice({ bank, kind, onExit }: Props) {
       answers,
       revealedKeys,
       autoCheck,
+      shuffleOptions,
       optionSeed,
       updatedAt: Date.now(),
     });
-  }, [ready, bank, kind, order, index, answers, revealedKeys, autoCheck, optionSeed]);
+  }, [
+    ready,
+    bank,
+    kind,
+    order,
+    index,
+    answers,
+    revealedKeys,
+    autoCheck,
+    shuffleOptions,
+    optionSeed,
+  ]);
 
   const byKey = useMemo(
     () => new Map((questions ?? []).map((question) => [question.key, question])),
@@ -268,7 +284,18 @@ export function Practice({ bank, kind, onExit }: Props) {
           </span>
           <span className="muted small">已答 {answeredCount} 题</span>
         </div>
-        <ProgressBar value={((index + 1) / order.length) * 100} />
+        <div className="progress-slider">
+          <ProgressBar value={((index + 1) / order.length) * 100} />
+          <input
+            className="progress-range"
+            type="range"
+            min={1}
+            max={order.length}
+            value={index + 1}
+            aria-label="拖动跳转题目"
+            onChange={(event) => setIndex(Number(event.target.value) - 1)}
+          />
+        </div>
       </div>
 
       <QuestionCard
@@ -276,24 +303,37 @@ export function Practice({ bank, kind, onExit }: Props) {
         selected={selected}
         revealed={revealed}
         onSelect={handleSelect}
-        optionSeed={optionSeed}
+        optionSeed={shuffleOptions ? optionSeed : undefined}
         favorite={favorite}
         onToggleFavorite={handleToggleFavorite}
       />
 
       {revealed ? (
-        <ExplanationCard question={currentQuestion} optionSeed={optionSeed} />
+        <ExplanationCard
+          question={currentQuestion}
+          optionSeed={shuffleOptions ? optionSeed : undefined}
+        />
       ) : null}
 
       <div className="practice-tools">
-        <label className="switch">
-          <input
-            type="checkbox"
-            checked={autoCheck}
-            onChange={(event) => setAutoCheck(event.target.checked)}
-          />
-          即时判题
-        </label>
+        <div className="switch-group">
+          <label className="switch">
+            <input
+              type="checkbox"
+              checked={autoCheck}
+              onChange={(event) => setAutoCheck(event.target.checked)}
+            />
+            即时判题
+          </label>
+          <label className="switch">
+            <input
+              type="checkbox"
+              checked={shuffleOptions}
+              onChange={(event) => setShuffleOptions(event.target.checked)}
+            />
+            选项乱序
+          </label>
+        </div>
         <span className="muted small">
           {currentQuestion.type === "multiple" ? "多选题选完后查看答案" : "单选题选完查看答案"}
         </span>
