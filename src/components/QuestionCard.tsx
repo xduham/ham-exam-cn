@@ -1,14 +1,20 @@
 /* SPDX-License-Identifier: MPL-2.0 */
 
-import { imageUrl, orderedOptions, questionLabel } from "../data";
+import {
+  displayAnswerKeys,
+  imageUrl,
+  optionLabel,
+  orderedOptions,
+  questionLabel,
+} from "../data";
 import type { Question } from "../types";
 import { classNames } from "../utils";
 
 type Props = {
   question: Question;
-  selected: string[];
+  selected: number[];
   revealed: boolean;
-  onSelect: (optionKey: string) => void;
+  onSelect: (optionKey: number) => void;
   optionSeed?: number;
   index?: number;
   total?: number;
@@ -72,7 +78,8 @@ export function QuestionCard({
       ) : null}
 
       <div className="options" role="group" aria-label="选项">
-        {options.map((option) => {
+        {options.map((option, index) => {
+          const displayKey = optionLabel(index);
           const isSelected = selected.includes(option.key);
           const isAnswer = revealed && question.answer_keys.includes(option.key);
           const isWrongChoice = revealed && isSelected && !question.answer_keys.includes(option.key);
@@ -90,7 +97,7 @@ export function QuestionCard({
               disabled={readOnly || revealed}
               onClick={() => onSelect(option.key)}
             >
-              <span className="option-key">{option.key}</span>
+              <span className="option-key">{displayKey}</span>
               <span className="option-text">{option.text}</span>
               {isAnswer ? <span className="option-mark">✓</span> : null}
               {isWrongChoice ? <span className="option-mark">✕</span> : null}
@@ -101,7 +108,7 @@ export function QuestionCard({
 
       {revealed ? (
         <p className="answer-line">
-          正确答案：<strong>{question.answer_keys.join("、")}</strong>
+          正确答案：<strong>{displayAnswerKeys(question, options).join("、")}</strong>
         </p>
       ) : null}
     </article>

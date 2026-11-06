@@ -6,7 +6,7 @@ import { classNames } from "../utils";
 type Props = {
   questions: Question[];
   order: string[];
-  answers: Record<string, string[]>;
+  answers: Record<string, number[]>;
   flags: Record<string, boolean>;
   currentKey: string | null;
   onJump: (key: string) => void;

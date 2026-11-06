@@ -22,7 +22,7 @@ type Props = {
 type ExamResult = {
   score: number;
   order: string[];
-  answers: Record<string, string[]>;
+  answers: Record<string, number[]>;
   autoSubmitted: boolean;
   optionSeed: number;
 };
@@ -30,7 +30,7 @@ type ExamResult = {
 export function Exam({ bank, onExit, onOpenWrong }: Props) {
   const [questions, setQuestions] = useState<Question[] | null>(null);
   const [order, setOrder] = useState<string[]>([]);
-  const [answers, setAnswers] = useState<Record<string, string[]>>({});
+  const [answers, setAnswers] = useState<Record<string, number[]>>({});
   const [flags, setFlags] = useState<Record<string, boolean>>({});
   const [endAtMs, setEndAtMs] = useState(0);
   const [startedAt, setStartedAt] = useState(0);
@@ -142,7 +142,7 @@ export function Exam({ bank, onExit, onOpenWrong }: Props) {
   const remaining = endAtMs ? Math.max(0, endAtMs - now) : 0;
   const rule = ruleFor(bank);
 
-  function handleSelect(optionKey: string): void {
+  function handleSelect(optionKey: number): void {
     if (!currentQuestion || finished) return;
     const next =
       currentQuestion.type === "single"

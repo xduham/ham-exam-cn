@@ -34,13 +34,13 @@ export function imageUrl(question: Question): string | null {
   return question.imageUrl ? asset(`questions/${question.imageUrl}`) : null;
 }
 
-export function sortedKeys(keys: string[]): string[] {
-  return [...keys].sort();
+export function sortedKeys(keys: number[]): number[] {
+  return [...keys].sort((left, right) => left - right);
 }
 
 /**
- * Shuffle option order for display while keeping each option's original key.
- * Explanations refer to option letters, so the letters must not be renumbered.
+ * Shuffle option order for display. Option keys are stable content IDs, not
+ * display letters; labels are assigned from the display position.
  */
 export function orderedOptions(question: Question, seed: number): QuestionOption[] {
   if (question.options.length < 2) return question.options;
@@ -51,7 +51,40 @@ export function orderedOptions(question: Question, seed: number): QuestionOption
   return shuffled;
 }
 
-export function isCorrect(question: Question, selected: string[]): boolean {
+export function optionLabel(index: number): string {
+  return String.fromCharCode(65 + index);
+}
+
+function labelMap(options: QuestionOption[]): Map<number, string> {
+  return new Map(options.map((option, index) => [option.key, optionLabel(index)]));
+}
+
+export function displayAnswerKeys(question: Question, options: QuestionOption[]): string[] {
+  const labels = labelMap(options);
+  return question.answer_keys
+    .map((key) => labels.get(key))
+    .filter((label): label is string => Boolean(label))
+    .sort();
+}
+
+const EXPLANATION_TOKEN = /\{\{(\d+(?:,\d+)*)\}\}/g;
+
+/** Replace {{id}} / {{id,id}} tokens with the labels of the current display order. */
+export function resolveExplanation(text: string, options: QuestionOption[]): string {
+  if (!text.includes("{{")) return text;
+  const labels = labelMap(options);
+  return text.replace(EXPLANATION_TOKEN, (_, body: string) => {
+    const resolved = body
+      .split(",")
+      .map(Number)
+      .map((key) => labels.get(key))
+      .filter((label): label is string => Boolean(label))
+      .sort();
+    return resolved.length > 0 ? resolved.join("") : "?";
+  });
+}
+
+export function isCorrect(question: Question, selected: number[]): boolean {
   return sortedKeys(selected).join(",") === sortedKeys(question.answer_keys).join(",");
 }
 

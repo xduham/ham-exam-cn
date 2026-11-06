@@ -31,7 +31,7 @@ export function Practice({ bank, kind, onExit }: Props) {
   const [questions, setQuestions] = useState<Question[] | null>(null);
   const [order, setOrder] = useState<string[]>([]);
   const [index, setIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, string[]>>({});
+  const [answers, setAnswers] = useState<Record<string, number[]>>({});
   const [revealedKeys, setRevealedKeys] = useState<string[]>([]);
   const [autoCheck, setAutoCheck] = useState(false);
   const [optionSeed, setOptionSeed] = useState(0);
@@ -72,7 +72,7 @@ export function Practice({ bank, kind, onExit }: Props) {
             kind === "random" ||
             saved.revealedKeys.length < saved.order.length);
         let nextIndex = 0;
-        let nextAnswers: Record<string, string[]> = {};
+        let nextAnswers: Record<string, number[]> = {};
         let nextRevealed: string[] = [];
         let nextAuto = false;
         let nextOptionSeed = randomSeed();
@@ -144,7 +144,7 @@ export function Practice({ bank, kind, onExit }: Props) {
   const revealed = currentKey ? revealedKeys.includes(currentKey) : false;
   const answeredCount = order.filter((key) => (answers[key] ?? []).length > 0).length;
 
-  function reveal(question: Question, chosen: string[]): void {
+  function reveal(question: Question, chosen: number[]): void {
     if (revealedKeys.includes(question.key)) return;
     const correct = isCorrect(question, chosen);
     recordPractice(bank, correct);
@@ -156,7 +156,7 @@ export function Practice({ bank, kind, onExit }: Props) {
     setRevealedKeys((previous) => [...previous, question.key]);
   }
 
-  function handleSelect(optionKey: string): void {
+  function handleSelect(optionKey: number): void {
     if (!currentQuestion || revealed) return;
     const next =
       currentQuestion.type === "single"
@@ -281,7 +281,9 @@ export function Practice({ bank, kind, onExit }: Props) {
         onToggleFavorite={handleToggleFavorite}
       />
 
-      {revealed ? <ExplanationCard question={currentQuestion} /> : null}
+      {revealed ? (
+        <ExplanationCard question={currentQuestion} optionSeed={optionSeed} />
+      ) : null}
 
       <div className="practice-tools">
         <label className="switch">

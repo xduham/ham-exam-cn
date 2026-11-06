@@ -5,7 +5,7 @@ export type Bank = "A" | "B" | "C";
 export type QuestionType = "single" | "multiple";
 
 export type QuestionOption = {
-  key: string;
+  key: number;
   text: string;
 };
 
@@ -15,7 +15,7 @@ export type Question = {
   code: string | null;
   question: string;
   options: QuestionOption[];
-  answer_keys: string[];
+  answer_keys: number[];
   type: QuestionType;
   imageUrl: string | null;
   explanation?: string;

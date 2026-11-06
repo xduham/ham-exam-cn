@@ -56,7 +56,7 @@ export type PracticeState = {
   kind: PracticeKind;
   order: string[];
   index: number;
-  answers: Record<string, string[]>;
+  answers: Record<string, number[]>;
   revealedKeys: string[];
   autoCheck: boolean;
   optionSeed: number;
@@ -66,7 +66,7 @@ export type PracticeState = {
 export type ExamState = {
   bank: Bank;
   order: string[];
-  answers: Record<string, string[]>;
+  answers: Record<string, number[]>;
   flags: Record<string, boolean>;
   endAtMs: number;
   startedAt: number;
@@ -77,11 +77,21 @@ function isBank(value: unknown): value is Bank {
   return value === "A" || value === "B" || value === "C";
 }
 
+/** Saved answers changed from option letters (A-D) to numeric option ids. */
+function hasNumericAnswers(value: unknown): boolean {
+  if (value === undefined || value === null) return true;
+  if (typeof value !== "object") return false;
+  return Object.values(value as Record<string, unknown>).every(
+    (answer) => Array.isArray(answer) && answer.every((key) => typeof key === "number"),
+  );
+}
+
 export function loadPractice(bank: Bank): PracticeState | null {
   const state = readJson<PracticeState | null>(KEYS.practice(bank), null);
   if (!state || state.bank !== bank || !Array.isArray(state.order) || state.order.length === 0) {
     return null;
   }
+  if (!hasNumericAnswers(state.answers)) return null;
   return {
     ...state,
     index: Math.max(0, Math.min(state.index ?? 0, state.order.length - 1)),
@@ -105,6 +115,7 @@ export function loadExam(bank: Bank): ExamState | null {
   if (!state || state.bank !== bank || !Array.isArray(state.order) || state.order.length === 0) {
     return null;
   }
+  if (!hasNumericAnswers(state.answers)) return null;
   return {
     ...state,
     answers: state.answers ?? {},

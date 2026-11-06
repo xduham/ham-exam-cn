@@ -8,6 +8,7 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, readdirSync, unlinkSync, writeFileSync, copyFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { protectedLettersForQuestion, tokenizeExplanation } from "./explanation-tokens.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(__dirname, "..");
@@ -18,6 +19,7 @@ const keyMapPath = path.join(dataDir, "key-map.json");
 
 const BANKS = ["A", "B", "C"];
 const CSV_FILES = { A: "class_a.csv", B: "class_b.csv", C: "class_c.csv" };
+const OPTION_LETTERS = ["A", "B", "C", "D"];
 
 function parseCsv(text) {
   const rows = [];
@@ -119,15 +121,24 @@ function main() {
       if (!q) continue;
 
       const options = [];
-      for (const letter of ["A", "B", "C", "D"]) {
-        const text = sanitizeOptionText(row[idx[letter]] || "");
-        if (text) options.push({ key: letter, text });
+      const sourceOptions = [];
+      for (let index = 0; index < OPTION_LETTERS.length; index += 1) {
+        const text = sanitizeOptionText(row[idx[OPTION_LETTERS[index]]] || "");
+        if (text) {
+          sourceOptions.push({ key: OPTION_LETTERS[index], text });
+          options.push({ key: index + 1, text });
+        }
       }
 
-      const answerKeys = (row[idx["T"]] || "")
-        .toUpperCase()
-        .split("")
-        .filter((ch) => ch >= "A" && ch <= "Z");
+      const answerKeys = [
+        ...new Set(
+          (row[idx["T"]] || "")
+            .toUpperCase()
+            .split("")
+            .filter((ch) => ch >= "A" && ch <= "Z")
+            .map((ch) => ch.charCodeAt(0) - 64),
+        ),
+      ].sort((left, right) => left - right);
 
       if (answerKeys.length === 0) {
         errors.push(`${bank}: missing answer for ${jraw || i || q.slice(0, 20)}`);
@@ -150,12 +161,27 @@ function main() {
       }
 
       const aiEntry = i ? ai[i] : null;
-      const explanation = (aiEntry?.explanation || "").trim() || undefined;
+      const explanationRaw = (aiEntry?.explanation || "").trim() || undefined;
+      const explanation = explanationRaw
+        ? tokenizeExplanation(explanationRaw, options.length, protectedLettersForQuestion(q))
+        : undefined;
       const mnemonic = (aiEntry?.mnemonic || "").trim() || undefined;
+
+      if (explanation) {
+        const optionKeys = new Set(options.map((option) => option.key));
+        for (const match of explanation.matchAll(/\{\{([\d,]+)\}\}/g)) {
+          for (const id of match[1].split(",").map(Number)) {
+            if (!optionKeys.has(id)) {
+              errors.push(`${bank}: explanation token ${id} not in options for ${jraw || i || q.slice(0, 20)}`);
+            }
+          }
+        }
+      }
 
       // Identity is the first J code, or a content hash when J is absent.
       // Duplicate J codes in the same bank get a content-hash suffix.
-      const contentHash = fingerprint([q, ...options.map((o) => `${o.key}:${o.text}`)]);
+      // Hash source option letters, not the numeric keys, so keys stay stable.
+      const contentHash = fingerprint([q, ...sourceOptions.map((o) => `${o.key}:${o.text}`)]);
       let identity = primaryJ || `hash:${contentHash}`;
       if (seenIdentities.has(identity)) {
         identity = `${identity}|${contentHash}`;

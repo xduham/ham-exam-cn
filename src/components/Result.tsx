@@ -12,7 +12,7 @@ type Props = {
   bank: Bank;
   questions: Question[];
   order: string[];
-  answers: Record<string, string[]>;
+  answers: Record<string, number[]>;
   score: number;
   autoSubmitted: boolean;
   optionSeed: number;
@@ -147,7 +147,7 @@ export function Result({
                 optionSeed={optionSeed}
                 readOnly
               />
-              <ExplanationCard question={question} />
+              <ExplanationCard question={question} optionSeed={optionSeed} />
             </div>
           );
         })}
