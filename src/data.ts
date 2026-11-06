@@ -1,7 +1,8 @@
 /* SPDX-License-Identifier: MPL-2.0 */
 
 import { asset } from "./branding";
-import type { Bank, Question } from "./types";
+import type { Bank, Question, QuestionOption } from "./types";
+import { hashString, seededShuffle } from "./utils";
 
 const bankCache = new Map<Bank, Promise<Question[]>>();
 
@@ -35,6 +36,19 @@ export function imageUrl(question: Question): string | null {
 
 export function sortedKeys(keys: string[]): string[] {
   return [...keys].sort();
+}
+
+/**
+ * Shuffle option order for display while keeping each option's original key.
+ * Explanations refer to option letters, so the letters must not be renumbered.
+ */
+export function orderedOptions(question: Question, seed: number): QuestionOption[] {
+  if (question.options.length < 2) return question.options;
+  const shuffled = seededShuffle(question.options, (seed ^ hashString(question.key)) >>> 0);
+  if (shuffled.every((option, index) => option.key === question.options[index].key)) {
+    [shuffled[0], shuffled[1]] = [shuffled[1], shuffled[0]];
+  }
+  return shuffled;
 }
 
 export function isCorrect(question: Question, selected: string[]): boolean {

@@ -59,6 +59,7 @@ export type PracticeState = {
   answers: Record<string, string[]>;
   revealedKeys: string[];
   autoCheck: boolean;
+  optionSeed: number;
   updatedAt: number;
 };
 
@@ -69,6 +70,7 @@ export type ExamState = {
   flags: Record<string, boolean>;
   endAtMs: number;
   startedAt: number;
+  optionSeed: number;
 };
 
 function isBank(value: unknown): value is Bank {
@@ -86,6 +88,7 @@ export function loadPractice(bank: Bank): PracticeState | null {
     answers: state.answers ?? {},
     revealedKeys: state.revealedKeys ?? [],
     autoCheck: Boolean(state.autoCheck),
+    optionSeed: typeof state.optionSeed === "number" ? state.optionSeed : 0,
   };
 }
 
@@ -106,6 +109,7 @@ export function loadExam(bank: Bank): ExamState | null {
     ...state,
     answers: state.answers ?? {},
     flags: state.flags ?? {},
+    optionSeed: typeof state.optionSeed === "number" ? state.optionSeed : 0,
   };
 }
 

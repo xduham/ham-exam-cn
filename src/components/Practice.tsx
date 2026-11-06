@@ -15,7 +15,7 @@ import { BANK_META } from "../rules";
 import { clearPractice, loadPractice, savePractice } from "../storage";
 import { recordPractice } from "../stats";
 import type { Bank, PracticeKind, Question } from "../types";
-import { shuffle } from "../utils";
+import { randomSeed, shuffle } from "../utils";
 import { ExplanationCard } from "./ExplanationCard";
 import { ProgressBar } from "./ProgressBar";
 import { QuestionCard } from "./QuestionCard";
@@ -34,6 +34,7 @@ export function Practice({ bank, kind, onExit }: Props) {
   const [answers, setAnswers] = useState<Record<string, string[]>>({});
   const [revealedKeys, setRevealedKeys] = useState<string[]>([]);
   const [autoCheck, setAutoCheck] = useState(false);
+  const [optionSeed, setOptionSeed] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
@@ -74,6 +75,7 @@ export function Practice({ bank, kind, onExit }: Props) {
         let nextAnswers: Record<string, string[]> = {};
         let nextRevealed: string[] = [];
         let nextAuto = false;
+        let nextOptionSeed = randomSeed();
 
         if (canResume) {
           const savedOrder = saved.order.filter((key) => byKey.has(key));
@@ -93,6 +95,7 @@ export function Practice({ bank, kind, onExit }: Props) {
           );
           nextRevealed = saved.revealedKeys.filter((key) => byKey.has(key));
           nextAuto = saved.autoCheck;
+          nextOptionSeed = saved.optionSeed || randomSeed();
         }
 
         setQuestions(loaded);
@@ -101,6 +104,7 @@ export function Practice({ bank, kind, onExit }: Props) {
         setAnswers(nextAnswers);
         setRevealedKeys(nextRevealed);
         setAutoCheck(nextAuto);
+        setOptionSeed(nextOptionSeed);
         setReady(true);
         setLoading(false);
       })
@@ -125,9 +129,10 @@ export function Practice({ bank, kind, onExit }: Props) {
       answers,
       revealedKeys,
       autoCheck,
+      optionSeed,
       updatedAt: Date.now(),
     });
-  }, [ready, bank, kind, order, index, answers, revealedKeys, autoCheck]);
+  }, [ready, bank, kind, order, index, answers, revealedKeys, autoCheck, optionSeed]);
 
   const byKey = useMemo(
     () => new Map((questions ?? []).map((question) => [question.key, question])),
@@ -271,6 +276,7 @@ export function Practice({ bank, kind, onExit }: Props) {
         selected={selected}
         revealed={revealed}
         onSelect={handleSelect}
+        optionSeed={optionSeed}
         favorite={favorite}
         onToggleFavorite={handleToggleFavorite}
       />

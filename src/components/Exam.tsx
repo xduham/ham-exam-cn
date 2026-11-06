@@ -7,7 +7,7 @@ import { BANK_META, ruleFor } from "../rules";
 import { clearExam, loadExam, saveExam } from "../storage";
 import { recordExam } from "../stats";
 import type { Bank, Question } from "../types";
-import { formatDuration, shuffle } from "../utils";
+import { formatDuration, randomSeed, shuffle } from "../utils";
 import { AnswerSheet } from "./AnswerSheet";
 import { ProgressBar } from "./ProgressBar";
 import { QuestionCard } from "./QuestionCard";
@@ -24,6 +24,7 @@ type ExamResult = {
   order: string[];
   answers: Record<string, string[]>;
   autoSubmitted: boolean;
+  optionSeed: number;
 };
 
 export function Exam({ bank, onExit, onOpenWrong }: Props) {
@@ -41,6 +42,7 @@ export function Exam({ bank, onExit, onOpenWrong }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [optionSeed, setOptionSeed] = useState(0);
   const submittedRef = useRef(false);
 
   useEffect(() => {
@@ -64,6 +66,7 @@ export function Exam({ bank, onExit, onOpenWrong }: Props) {
             setFlags(saved.flags);
             setEndAtMs(saved.endAtMs);
             setStartedAt(saved.startedAt);
+            setOptionSeed(saved.optionSeed || randomSeed());
             setReady(true);
             setLoading(false);
             return;
@@ -87,6 +90,7 @@ export function Exam({ bank, onExit, onOpenWrong }: Props) {
         setFlags({});
         setStartedAt(started);
         setEndAtMs(started + rule.minutes * 60_000);
+        setOptionSeed(randomSeed());
         setReady(true);
         setLoading(false);
       })
@@ -103,8 +107,8 @@ export function Exam({ bank, onExit, onOpenWrong }: Props) {
 
   useEffect(() => {
     if (!ready || finished || order.length === 0) return;
-    saveExam({ bank, order, answers, flags, endAtMs, startedAt });
-  }, [ready, finished, bank, order, answers, flags, endAtMs, startedAt]);
+    saveExam({ bank, order, answers, flags, endAtMs, startedAt, optionSeed });
+  }, [ready, finished, bank, order, answers, flags, endAtMs, startedAt, optionSeed]);
 
   useEffect(() => {
     if (finished) return;
@@ -181,7 +185,13 @@ export function Exam({ bank, onExit, onOpenWrong }: Props) {
 
     recordExam(bank, score, score >= rule.pass);
     clearExam(bank);
-    setResult({ score, order: [...order], answers: { ...answers }, autoSubmitted: auto });
+    setResult({
+      score,
+      order: [...order],
+      answers: { ...answers },
+      autoSubmitted: auto,
+      optionSeed,
+    });
     setFinished(true);
     setSheetOpen(false);
   }
@@ -193,7 +203,7 @@ export function Exam({ bank, onExit, onOpenWrong }: Props) {
     }
     if (!window.confirm("退出后本次考试进度会保存，下次可以继续。确定退出？")) return;
     if (questions && order.length > 0) {
-      saveExam({ bank, order, answers, flags, endAtMs, startedAt });
+      saveExam({ bank, order, answers, flags, endAtMs, startedAt, optionSeed });
     }
     onExit();
   }
@@ -233,6 +243,7 @@ export function Exam({ bank, onExit, onOpenWrong }: Props) {
         answers={result.answers}
         score={result.score}
         autoSubmitted={result.autoSubmitted}
+        optionSeed={result.optionSeed}
         onExit={onExit}
         onOpenWrong={onOpenWrong}
       />
@@ -279,6 +290,7 @@ export function Exam({ bank, onExit, onOpenWrong }: Props) {
         selected={selected}
         revealed={false}
         onSelect={handleSelect}
+        optionSeed={optionSeed}
       />
 
       {sheetOpen ? (

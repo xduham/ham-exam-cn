@@ -15,6 +15,7 @@ type Props = {
   answers: Record<string, string[]>;
   score: number;
   autoSubmitted: boolean;
+  optionSeed: number;
   onExit: () => void;
   onOpenWrong: () => void;
 };
@@ -26,6 +27,7 @@ export function Result({
   answers,
   score,
   autoSubmitted,
+  optionSeed,
   onExit,
   onOpenWrong,
 }: Props) {
@@ -142,6 +144,7 @@ export function Result({
                 onSelect={() => undefined}
                 index={position}
                 total={order.length}
+                optionSeed={optionSeed}
                 readOnly
               />
               <ExplanationCard question={question} />

@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: MPL-2.0 */
 
-import { imageUrl, questionLabel } from "../data";
+import { imageUrl, orderedOptions, questionLabel } from "../data";
 import type { Question } from "../types";
 import { classNames } from "../utils";
 
@@ -9,6 +9,7 @@ type Props = {
   selected: string[];
   revealed: boolean;
   onSelect: (optionKey: string) => void;
+  optionSeed?: number;
   index?: number;
   total?: number;
   favorite?: boolean;
@@ -21,6 +22,7 @@ export function QuestionCard({
   selected,
   revealed,
   onSelect,
+  optionSeed,
   index,
   total,
   favorite = false,
@@ -29,6 +31,8 @@ export function QuestionCard({
 }: Props) {
   const image = imageUrl(question);
   const label = questionLabel(question);
+  const options =
+    typeof optionSeed === "number" ? orderedOptions(question, optionSeed) : question.options;
 
   return (
     <article className="card question-card">
@@ -68,7 +72,7 @@ export function QuestionCard({
       ) : null}
 
       <div className="options" role="group" aria-label="选项">
-        {question.options.map((option) => {
+        {options.map((option) => {
           const isSelected = selected.includes(option.key);
           const isAnswer = revealed && question.answer_keys.includes(option.key);
           const isWrongChoice = revealed && isSelected && !question.answer_keys.includes(option.key);
