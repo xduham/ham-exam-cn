@@ -9,7 +9,6 @@ export type PracticeProgress = {
   index: number;
   answers: Record<string, number[]>;
   revealedKeys: string[];
-  fuzzyKeys: string[];
   autoCheck: boolean;
   shuffleOptions: boolean;
   optionSeed: number;
@@ -69,7 +68,6 @@ export function planPracticeSession(input: PracticePlanInput): PracticePlan {
       index: 0,
       answers: {},
       revealedKeys: [],
-      fuzzyKeys: [],
       autoCheck: false,
       shuffleOptions: true,
       optionSeed: createSeed(),
@@ -97,7 +95,6 @@ export function planPracticeSession(input: PracticePlanInput): PracticePlan {
       Object.entries(saved.answers).filter(([key]) => valid.has(key)),
     ),
     revealedKeys: saved.revealedKeys.filter((key) => valid.has(key)),
-    fuzzyKeys: saved.fuzzyKeys.filter((key) => valid.has(key)),
     autoCheck: saved.autoCheck,
     shuffleOptions: saved.shuffleOptions !== false,
     optionSeed: saved.optionSeed || createSeed(),
@@ -182,8 +179,4 @@ function reveal(
     },
     outcome: { correct: isCorrect(question, selected) },
   };
-}
-
-export function toggleKey(keys: string[], key: string): string[] {
-  return keys.includes(key) ? keys.filter((item) => item !== key) : [...keys, key];
 }

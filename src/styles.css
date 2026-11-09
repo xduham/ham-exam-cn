@@ -606,17 +606,6 @@ p {
   color: var(--gh-warning-fg);
 }
 
-.fuzzy-on {
-  border-color: color-mix(in srgb, var(--gh-yellow) 35%, var(--gh-border));
-  background: var(--gh-warning-subtle);
-  color: var(--gh-warning-fg);
-}
-
-.fuzzy-on:hover:not(:disabled) {
-  border-color: var(--gh-yellow);
-  background: var(--gh-warning-subtle);
-}
-
 /* Badges / labels */
 
 .badge {
@@ -950,6 +939,13 @@ p {
 
 /* Practice tools / bottom bar */
 
+.practice-scroll {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 0;
+}
+
 .practice-tools {
   display: flex;
   align-items: center;
@@ -995,6 +991,10 @@ p {
 .bottom-bar .btn {
   min-height: 32px;
   padding: 0 8px;
+}
+
+.bottom-bar-2 {
+  grid-template-columns: repeat(2, 1fr);
 }
 
 .bottom-bar-3 {
@@ -1464,6 +1464,62 @@ p {
   .bottom-bar-4 .btn {
     padding: 0 4px;
     font-size: 12px;
+  }
+
+  /* Practice focus mode: the question area is the screen, controls stay put. */
+  .app-practice {
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .app-practice .site-header,
+  .app-practice .site-footer {
+    display: none;
+  }
+
+  .app-practice .site-main {
+    flex: 1;
+    min-height: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .app-practice .container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding-top: calc(10px + env(safe-area-inset-top));
+  }
+
+  .app-practice .view {
+    flex: 1;
+    min-height: 0;
+    gap: 10px;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .app-practice .view-head,
+  .app-practice .progress-card,
+  .app-practice .practice-tools {
+    flex: 0 0 auto;
+  }
+
+  .app-practice .practice-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    gap: 12px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .app-practice .bottom-bar {
+    position: static;
+    flex: 0 0 auto;
+    margin-top: 0;
   }
 }
 

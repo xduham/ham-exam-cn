@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { usePracticeSession } from "../hooks/usePracticeSession";
 import { PRACTICE_LABELS } from "../labels";
-import { BANK_META } from "../rules";
 import type { Bank, PracticeKind } from "../types";
 import { ExplanationCard } from "./ExplanationCard";
 import { ProgressBar } from "./ProgressBar";
@@ -53,7 +52,7 @@ export function Practice({ bank, kind, onExit }: Props) {
     );
   }
 
-  const { question, selected, revealed, fuzzy, favorite } = current;
+  const { question, selected, revealed, favorite } = current;
   const optionSeed = session.settings.shuffleOptions ? session.optionSeed : undefined;
   const isLast = session.index >= session.total - 1;
 
@@ -75,9 +74,6 @@ export function Practice({ bank, kind, onExit }: Props) {
         </button>
         <div className="view-title-wrap">
           <h1 className="view-title">{PRACTICE_LABELS[kind]}</h1>
-          <p className="muted small">
-            {BANK_META[bank].label} · {session.total} 题 · {BANK_META[bank].hint}
-          </p>
         </div>
         {kind === "sequential" ? (
           <button type="button" className="btn btn-secondary" onClick={() => setSearchOpen(true)}>
@@ -109,17 +105,19 @@ export function Practice({ bank, kind, onExit }: Props) {
         </div>
       </div>
 
-      <QuestionCard
-        question={question}
-        selected={selected}
-        revealed={revealed}
-        onSelect={session.actions.select}
-        optionSeed={optionSeed}
-        favorite={favorite}
-        onToggleFavorite={session.actions.toggleFavorite}
-      />
+      <div className="practice-scroll">
+        <QuestionCard
+          question={question}
+          selected={selected}
+          revealed={revealed}
+          onSelect={session.actions.select}
+          optionSeed={optionSeed}
+          favorite={favorite}
+          onToggleFavorite={session.actions.toggleFavorite}
+        />
 
-      {revealed ? <ExplanationCard question={question} optionSeed={optionSeed} /> : null}
+        {revealed ? <ExplanationCard question={question} optionSeed={optionSeed} /> : null}
+      </div>
 
       <div className="practice-tools">
         <div className="switch-group">
@@ -145,17 +143,9 @@ export function Practice({ bank, kind, onExit }: Props) {
         </span>
       </div>
 
-      <div className={revealed ? "bottom-bar bottom-bar-3" : "bottom-bar bottom-bar-4"}>
+      <div className={revealed ? "bottom-bar bottom-bar-2" : "bottom-bar bottom-bar-3"}>
         <button type="button" className="btn" onClick={session.actions.prev} disabled={session.index === 0}>
           上一题
-        </button>
-        <button
-          type="button"
-          className={fuzzy ? "btn btn-secondary fuzzy-on" : "btn"}
-          onClick={session.actions.toggleFuzzy}
-          aria-pressed={fuzzy}
-        >
-          {fuzzy ? "已模糊" : "模糊"}
         </button>
         {!revealed ? (
           <button type="button" className="btn btn-primary" onClick={session.actions.check}>

@@ -52,7 +52,7 @@ export default function App() {
   const home = (): void => setRoute({ name: "home" });
 
   return (
-    <div className="app">
+    <div className={route.name === "practice" ? "app app-practice" : "app"}>
       <a className="skip-link" href="#main">
         跳到主要内容
       </a>

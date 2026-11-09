@@ -5,7 +5,6 @@ import {
   applyPracticeCheck,
   applyPracticeSelection,
   planPracticeSession,
-  toggleKey,
   type PracticePlan,
 } from "../domain/practice";
 import { clearPractice, loadPractice, savePractice } from "../storage";
@@ -26,7 +25,6 @@ export type PracticeCurrent = {
   question: Question;
   selected: number[];
   revealed: boolean;
-  fuzzy: boolean;
   favorite: boolean;
 };
 
@@ -44,7 +42,6 @@ export type PracticeSession = {
     select: (optionKey: number) => void;
     check: () => void;
     toggleFavorite: () => void;
-    toggleFuzzy: () => void;
     prev: () => void;
     next: () => void;
     jumpTo: (key: string) => void;
@@ -117,7 +114,6 @@ export function usePracticeSession(bank: Bank, kind: PracticeKind): PracticeSess
       index: active.index,
       answers: active.answers,
       revealedKeys: active.revealedKeys,
-      fuzzyKeys: active.fuzzyKeys,
       autoCheck: active.autoCheck,
       shuffleOptions: active.shuffleOptions,
       optionSeed: active.optionSeed,
@@ -134,7 +130,6 @@ export function usePracticeSession(bank: Bank, kind: PracticeKind): PracticeSess
           question: currentQuestion,
           selected: active.answers[currentQuestion.key] ?? [],
           revealed: active.revealedKeys.includes(currentQuestion.key),
-          fuzzy: active.fuzzyKeys.includes(currentQuestion.key),
           favorite: collections.isFavorite(currentQuestion.key),
         }
       : null;
@@ -191,14 +186,6 @@ export function usePracticeSession(bank: Bank, kind: PracticeKind): PracticeSess
     if (currentStateValue) collections.toggleFavorite(currentStateValue.question);
   }
 
-  function toggleFuzzy(): void {
-    const state = activeSession();
-    if (!state) return;
-    const key = state.order[state.index];
-    if (!key) return;
-    commit({ ...state, fuzzyKeys: toggleKey(state.fuzzyKeys, key) });
-  }
-
   function move(delta: number): void {
     const state = activeSession();
     if (!state) return;
@@ -252,7 +239,6 @@ export function usePracticeSession(bank: Bank, kind: PracticeKind): PracticeSess
       select,
       check,
       toggleFavorite,
-      toggleFuzzy,
       prev: () => move(-1),
       next: () => move(1),
       jumpTo,

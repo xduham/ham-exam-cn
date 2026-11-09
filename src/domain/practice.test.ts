@@ -6,7 +6,6 @@ import {
   applyPracticeCheck,
   applyPracticeSelection,
   planPracticeSession,
-  toggleKey,
   type PracticeProgress,
   type SavedPractice,
 } from "./practice";
@@ -39,7 +38,6 @@ function progress(overrides: Partial<PracticeProgress> = {}): PracticeProgress {
     index: 0,
     answers: {},
     revealedKeys: [],
-    fuzzyKeys: [],
     autoCheck: false,
     shuffleOptions: true,
     optionSeed: 7,
@@ -86,7 +84,6 @@ describe("planPracticeSession", () => {
         index: 2,
         answers: { A: [2], X: [1] },
         revealedKeys: ["A", "X"],
-        fuzzyKeys: ["B", "X"],
         autoCheck: true,
         shuffleOptions: false,
         optionSeed: 42,
@@ -99,7 +96,6 @@ describe("planPracticeSession", () => {
     expect(plan.index).toBe(2);
     expect(plan.answers).toEqual({ A: [2] });
     expect(plan.revealedKeys).toEqual(["A"]);
-    expect(plan.fuzzyKeys).toEqual(["B"]);
     expect(plan.autoCheck).toBe(true);
     expect(plan.shuffleOptions).toBe(false);
     expect(plan.optionSeed).toBe(42);
@@ -269,12 +265,5 @@ describe("applyPracticeCheck", () => {
     const next = applyPracticeCheck(state, question("A", [1, 3], "multiple"));
 
     expect(next.outcome).toEqual({ correct: true });
-  });
-});
-
-describe("toggleKey", () => {
-  it("adds and removes a key", () => {
-    expect(toggleKey([], "A")).toEqual(["A"]);
-    expect(toggleKey(["A", "B"], "A")).toEqual(["B"]);
   });
 });
