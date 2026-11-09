@@ -14,8 +14,9 @@ export type ExamScore = {
 };
 
 /**
- * Pick singles and multiples according to the exam rule, then shuffle the
- * combined paper. Banks smaller than the rule produce a shorter paper.
+ * Pick singles and multiples according to the exam rule. Each group is
+ * shuffled independently; the paper always runs singles first, then
+ * multiples. Banks smaller than the rule produce a shorter paper.
  */
 export function buildExamPaper(
   questions: Question[],
@@ -29,7 +30,7 @@ export function buildExamPaper(
   const multiples = randomize(
     questions.filter((question) => question.type === "multiple"),
   ).slice(0, rule.multiples);
-  return randomize([...singles, ...multiples]).map((question) => question.key);
+  return [...singles, ...multiples].map((question) => question.key);
 }
 
 export function scoreExam(

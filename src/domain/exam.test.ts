@@ -66,14 +66,14 @@ describe("buildExamPaper", () => {
     expect(order).toEqual(["s1"]);
   });
 
-  it("passes the combined paper through the final randomizer", () => {
+  it("keeps singles before multiples", () => {
     const order = buildExamPaper(
       [question("s1"), question("s2"), question("m1", [1, 2], "multiple")],
       { total: 3, singles: 2, multiples: 1, minutes: 40, pass: 2 },
       <T,>(items: T[]) => [...items].reverse(),
     );
 
-    expect(order).toEqual(["m1", "s1", "s2"]);
+    expect(order).toEqual(["s2", "s1", "m1"]);
   });
 });
 

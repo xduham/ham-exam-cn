@@ -3,37 +3,52 @@
 import type { Bank } from "./types";
 
 export type ExamRule = {
-  total: number;
   singles: number;
   multiples: number;
+  /** Derived from singles + multiples so the blueprint cannot drift. */
+  total: number;
   minutes: number;
   pass: number;
 };
 
+/**
+ * Fixed exam blueprint: A 32+8, B 45+15, C 70+20.
+ * Keep the question counts here; paper selection only consumes them.
+ */
+function examRule(
+  singles: number,
+  multiples: number,
+  minutes: number,
+  pass: number,
+): ExamRule {
+  return { singles, multiples, total: singles + multiples, minutes, pass };
+}
+
 export const RULES: Record<Bank, ExamRule> = {
-  A: { total: 40, singles: 32, multiples: 8, minutes: 40, pass: 30 },
-  B: { total: 60, singles: 45, multiples: 15, minutes: 60, pass: 45 },
-  C: { total: 90, singles: 70, multiples: 20, minutes: 90, pass: 70 },
+  A: examRule(32, 8, 40, 30),
+  B: examRule(45, 15, 60, 45),
+  C: examRule(70, 20, 90, 70),
 };
 
-export const BANK_META: Record<Bank, { label: string; hint: string; rule: string }> = {
+export const BANK_META: Record<Bank, { label: string; hint: string }> = {
   A: {
     label: "A 类",
     hint: "基础操作能力",
-    rule: "40 题 · 40 分钟 · 30 分合格",
   },
   B: {
     label: "B 类",
     hint: "进阶操作能力",
-    rule: "60 题 · 60 分钟 · 45 分合格",
   },
   C: {
     label: "C 类",
     hint: "短波与高级操作",
-    rule: "90 题 · 90 分钟 · 70 分合格",
   },
 };
 
 export function ruleFor(bank: Bank): ExamRule {
   return RULES[bank];
+}
+
+export function ruleSummary(rule: ExamRule): string {
+  return `${rule.total} 题 · ${rule.minutes} 分钟 · ${rule.pass} 分合格`;
 }

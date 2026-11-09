@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: MPL-2.0 */
 
-import { BANK_META } from "../rules";
+import { BANK_META, ruleFor, ruleSummary } from "../rules";
 import type { Bank } from "../types";
 import { classNames } from "../utils";
 
@@ -30,7 +30,7 @@ export function BankPicker({ value, onChange, disabled = false }: Props) {
           >
             <span className="bank-label">{meta.label}</span>
             <span className="bank-hint">{meta.hint}</span>
-            <span className="bank-rule">{meta.rule}</span>
+            <span className="bank-rule">{ruleSummary(ruleFor(bank))}</span>
           </button>
         );
       })}
