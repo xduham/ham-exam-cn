@@ -22,6 +22,4 @@ export type Question = {
   mnemonic?: string;
 };
 
-export type View = "home" | "practice" | "exam" | "wrong" | "favorites" | "stats";
-
 export type PracticeKind = "sequential" | "random" | "wrong" | "favorite";

@@ -63,3 +63,7 @@ export function percent(correct: number, total: number): number {
   if (total <= 0) return 0;
   return Math.round((correct / total) * 100);
 }
+
+export function moveIndex(index: number, delta: number, total: number): number {
+  return Math.max(0, Math.min(total - 1, index + delta));
+}

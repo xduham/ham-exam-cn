@@ -19,6 +19,8 @@ XDUham-club 的业余无线电操作证考试练习站。
 
 Vite 8 + React 19 + TypeScript 6；单个 CSS 文件，无路由/状态/UI 库；纯静态 `dist/`。
 
+业务规则在 `src/domain/`（纯函数），会话状态在 `src/hooks/`，组件只负责渲染；运行时状态机盘点见 [`docs/state-machines.md`](docs/state-machines.md)。
+
 ## 本地开发
 
 Node 24.18.0（见 `.nvmrc`），npm。
@@ -27,6 +29,7 @@ Node 24.18.0（见 `.nvmrc`），npm。
 npm ci
 npm run dev
 npm run typecheck
+npm test
 npm run build
 npm run preview
 ```

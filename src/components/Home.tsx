@@ -1,10 +1,8 @@
 /* SPDX-License-Identifier: MPL-2.0 */
 
-import { favoriteCount, wrongCount } from "../collections";
+import { useHomeSummary } from "../hooks/useHomeSummary";
 import { PRACTICE_LABELS } from "../labels";
-import { BANK_META, ruleFor } from "../rules";
-import { isExamActive, loadExam, loadPractice } from "../storage";
-import { loadStats, practiceAccuracy } from "../stats";
+import { BANK_META } from "../rules";
 import type { Bank, PracticeKind } from "../types";
 import { formatDuration } from "../utils";
 import { BankPicker } from "./BankPicker";
@@ -28,18 +26,17 @@ export function Home({
   onFavorites,
   onStats,
 }: Props) {
-  const practice = loadPractice(bank);
-  const exam = loadExam(bank);
-  const examActive = isExamActive(exam);
-  const stats = loadStats()[bank];
-  const accuracy = practiceAccuracy(stats);
-  const rule = ruleFor(bank);
-  const wrong = wrongCount(bank);
-  const favorites = favoriteCount(bank);
-  const practiceVisible =
-    practice &&
-    (practice.kind !== "wrong" || wrong > 0) &&
-    (practice.kind !== "favorite" || favorites > 0);
+  const {
+    practice,
+    exam,
+    examActive,
+    practiceVisible,
+    stats,
+    accuracy,
+    rule,
+    wrongCount: wrong,
+    favoriteCount: favorites,
+  } = useHomeSummary(bank);
 
   return (
     <div className="stack">

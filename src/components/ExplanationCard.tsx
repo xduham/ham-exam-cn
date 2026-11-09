@@ -1,6 +1,10 @@
 /* SPDX-License-Identifier: MPL-2.0 */
 
-import { displayAnswerKeys, orderedOptions, resolveExplanation } from "../data";
+import {
+  displayAnswerKeys,
+  orderedOptions,
+  resolveExplanation,
+} from "../domain/questions";
 import type { Question } from "../types";
 
 type Props = {

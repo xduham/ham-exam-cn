@@ -1,7 +1,6 @@
 /* SPDX-License-Identifier: MPL-2.0 */
 
-import { useState } from "react";
-import { removeWrong, wrongEntries } from "../collections";
+import { useCollections } from "../hooks/useCollections";
 import { BANK_META } from "../rules";
 import type { Bank } from "../types";
 import { formatDate } from "../utils";
@@ -13,8 +12,7 @@ type Props = {
 };
 
 export function WrongBook({ bank, onPractice, onExit }: Props) {
-  const [, setTick] = useState(0);
-  const entries = wrongEntries(bank);
+  const { wrongEntries, removeWrong } = useCollections(bank);
 
   return (
     <div className="view">
@@ -25,14 +23,14 @@ export function WrongBook({ bank, onPractice, onExit }: Props) {
         <div className="view-title-wrap">
           <h1 className="view-title">错题本</h1>
           <p className="muted small">
-            {BANK_META[bank].label} · 共 {entries.length} 题
+            {BANK_META[bank].label} · 共 {wrongEntries.length} 题
           </p>
         </div>
         <button
           type="button"
           className="btn btn-primary"
           onClick={onPractice}
-          disabled={entries.length === 0}
+          disabled={wrongEntries.length === 0}
         >
           开始练习
         </button>
@@ -42,7 +40,7 @@ export function WrongBook({ bank, onPractice, onExit }: Props) {
         练习或考试答错的题会自动收录。在错题练习中答对一次即自动移出，也可以手动移除。
       </p>
 
-      {entries.length === 0 ? (
+      {wrongEntries.length === 0 ? (
         <div className="card empty">
           <p>当前题库还没有错题。</p>
           <button type="button" className="btn btn-primary" onClick={onExit}>
@@ -51,7 +49,7 @@ export function WrongBook({ bank, onPractice, onExit }: Props) {
         </div>
       ) : (
         <div className="list">
-          {entries.map((entry) => (
+          {wrongEntries.map((entry) => (
             <div className="card list-row" key={entry.key}>
               <div className="list-main">
                 <div className="row gap">
@@ -64,10 +62,7 @@ export function WrongBook({ bank, onPractice, onExit }: Props) {
               <button
                 type="button"
                 className="btn btn-ghost"
-                onClick={() => {
-                  removeWrong(bank, entry.key);
-                  setTick((value) => value + 1);
-                }}
+                onClick={() => removeWrong(entry.key)}
               >
                 移除
               </button>

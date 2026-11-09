@@ -1,12 +1,12 @@
 /* SPDX-License-Identifier: MPL-2.0 */
 
+import { imageUrl } from "../data";
 import {
   displayAnswerKeys,
-  imageUrl,
   optionLabel,
   orderedOptions,
   questionLabel,
-} from "../data";
+} from "../domain/questions";
 import type { Question } from "../types";
 import { classNames } from "../utils";
 

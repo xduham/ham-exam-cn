@@ -1,7 +1,8 @@
 /* SPDX-License-Identifier: MPL-2.0 */
 
 import { useMemo, useState } from "react";
-import { isCorrect, questionLabel } from "../data";
+import { answeredCountOf, wrongKeysOf } from "../domain/exam";
+import { isCorrect, questionLabel } from "../domain/questions";
 import { BANK_META, ruleFor } from "../rules";
 import type { Bank, Question } from "../types";
 import { classNames } from "../utils";
@@ -39,11 +40,8 @@ export function Result({
     [questions],
   );
 
-  const wrongKeys = order.filter((key) => {
-    const question = byKey.get(key);
-    return question ? !isCorrect(question, answers[key] ?? []) : false;
-  });
-  const answeredCount = order.filter((key) => (answers[key] ?? []).length > 0).length;
+  const wrongKeys = wrongKeysOf(order, byKey, answers);
+  const answeredCount = answeredCountOf(order, answers);
   const displayKeys = filter === "wrong" ? wrongKeys : order;
 
   return (

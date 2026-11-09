@@ -8,10 +8,20 @@ import { Home } from "./components/Home";
 import { Practice } from "./components/Practice";
 import { Stats } from "./components/Stats";
 import { WrongBook } from "./components/WrongBook";
+import { useTheme } from "./hooks/useTheme";
 import { loadBankChoice, saveBankChoice } from "./storage";
-import type { Bank, PracticeKind, View } from "./types";
+import type { Bank, PracticeKind } from "./types";
 
-const VIEW_TITLES: Record<View, string> = {
+/** Route state machine: exactly one screen, and practice always has a kind. */
+type Route =
+  | { name: "home" }
+  | { name: "practice"; kind: PracticeKind }
+  | { name: "exam" }
+  | { name: "wrong" }
+  | { name: "favorites" }
+  | { name: "stats" };
+
+const VIEW_TITLES: Record<Route["name"], string> = {
   home: "",
   practice: "练习",
   exam: "模拟考试",
@@ -20,67 +30,26 @@ const VIEW_TITLES: Record<View, string> = {
   stats: "统计",
 };
 
-type Theme = "light" | "dark";
-const THEME_KEY = "ham-exam-cn:theme";
-
-function storedTheme(): Theme | null {
-  try {
-    const value = window.localStorage.getItem(THEME_KEY);
-    return value === "light" || value === "dark" ? value : null;
-  } catch {
-    return null;
-  }
-}
-
 export default function App() {
-  const [view, setView] = useState<View>("home");
+  const [route, setRoute] = useState<Route>({ name: "home" });
   const [bank, setBank] = useState<Bank>(() => loadBankChoice());
-  const [practiceKind, setPracticeKind] = useState<PracticeKind>("sequential");
-  const [theme, setTheme] = useState<Theme>(() =>
-    document.documentElement.dataset.theme === "dark" ? "dark" : "light",
-  );
+  const { theme, toggle: toggleTheme } = useTheme();
 
   useEffect(() => {
     saveBankChoice(bank);
   }, [bank]);
 
   useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-    document
-      .querySelector('meta[name="theme-color"]')
-      ?.setAttribute("content", theme === "dark" ? branding.themeColorDark : branding.themeColor);
-  }, [theme]);
-
-  useEffect(() => {
-    const media = window.matchMedia("(prefers-color-scheme: dark)");
-    const handleChange = (event: MediaQueryListEvent) => {
-      if (storedTheme()) return;
-      setTheme(event.matches ? "dark" : "light");
-    };
-    media.addEventListener("change", handleChange);
-    return () => media.removeEventListener("change", handleChange);
-  }, []);
-
-  function toggleTheme(): void {
-    const next: Theme = theme === "dark" ? "light" : "dark";
-    setTheme(next);
-    try {
-      window.localStorage.setItem(THEME_KEY, next);
-    } catch {
-      // Storage can be unavailable; the theme still applies for this session.
-    }
-  }
-
-  useEffect(() => {
-    const title = VIEW_TITLES[view];
+    const title = VIEW_TITLES[route.name];
     document.title = title ? `${title} · ${branding.shortName}` : branding.siteName;
     window.scrollTo({ top: 0 });
-  }, [view]);
+  }, [route.name]);
 
   function startPractice(kind: PracticeKind): void {
-    setPracticeKind(kind);
-    setView("practice");
+    setRoute({ name: "practice", kind });
   }
+
+  const home = (): void => setRoute({ name: "home" });
 
   return (
     <div className="app">
@@ -98,10 +67,10 @@ export default function App() {
             </div>
           </div>
           <div className="header-actions">
-            {view === "home" ? (
+            {route.name === "home" ? (
               <span className="badge badge-muted">本地练习</span>
             ) : (
-              <button type="button" className="btn btn-ghost" onClick={() => setView("home")}>
+              <button type="button" className="btn btn-ghost" onClick={home}>
                 首页
               </button>
             )}
@@ -120,47 +89,43 @@ export default function App() {
 
       <main className="site-main" id="main">
         <div className="container">
-          {view === "home" ? (
+          {route.name === "home" ? (
             <Home
               bank={bank}
               onBankChange={setBank}
               onPractice={startPractice}
-              onExam={() => setView("exam")}
-              onWrong={() => setView("wrong")}
-              onFavorites={() => setView("favorites")}
-              onStats={() => setView("stats")}
+              onExam={() => setRoute({ name: "exam" })}
+              onWrong={() => setRoute({ name: "wrong" })}
+              onFavorites={() => setRoute({ name: "favorites" })}
+              onStats={() => setRoute({ name: "stats" })}
             />
           ) : null}
 
-          {view === "practice" ? (
-            <Practice bank={bank} kind={practiceKind} onExit={() => setView("home")} />
+          {route.name === "practice" ? (
+            <Practice bank={bank} kind={route.kind} onExit={home} />
           ) : null}
 
-          {view === "exam" ? (
-            <Exam
-              bank={bank}
-              onExit={() => setView("home")}
-              onOpenWrong={() => setView("wrong")}
-            />
+          {route.name === "exam" ? (
+            <Exam bank={bank} onExit={home} onOpenWrong={() => setRoute({ name: "wrong" })} />
           ) : null}
 
-          {view === "wrong" ? (
+          {route.name === "wrong" ? (
             <WrongBook
               bank={bank}
               onPractice={() => startPractice("wrong")}
-              onExit={() => setView("home")}
+              onExit={home}
             />
           ) : null}
 
-          {view === "favorites" ? (
+          {route.name === "favorites" ? (
             <Favorites
               bank={bank}
               onPractice={() => startPractice("favorite")}
-              onExit={() => setView("home")}
+              onExit={home}
             />
           ) : null}
 
-          {view === "stats" ? <Stats onExit={() => setView("home")} /> : null}
+          {route.name === "stats" ? <Stats onExit={home} /> : null}
         </div>
       </main>
 

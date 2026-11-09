@@ -1,8 +1,7 @@
 /* SPDX-License-Identifier: MPL-2.0 */
 
-import { clearAppData } from "../storage";
+import { useStatsOverview } from "../hooks/useStatsOverview";
 import { BANK_META, ruleFor } from "../rules";
-import { loadStats, practiceAccuracy } from "../stats";
 import type { Bank } from "../types";
 import { percent } from "../utils";
 
@@ -23,14 +22,13 @@ function lastActive(timestamp: number): string {
 }
 
 export function Stats({ onExit }: Props) {
-  const stats = loadStats();
+  const { stats, resetAll } = useStatsOverview();
 
   function reset(): void {
     if (!window.confirm("确定清空全部本地学习数据？包括练习进度、考试进度、错题本、收藏和统计。")) {
       return;
     }
-    clearAppData();
-    window.location.reload();
+    resetAll();
   }
 
   return (
@@ -49,7 +47,7 @@ export function Stats({ onExit }: Props) {
       <div className="stack">
         {BANKS.map((bank) => {
           const item = stats[bank];
-          const accuracy = practiceAccuracy(item);
+          const accuracy = percent(item.practiceCorrect, item.practiceAnswered);
           const total = ruleFor(bank).total;
           return (
             <section className="card stat-card" key={bank}>
