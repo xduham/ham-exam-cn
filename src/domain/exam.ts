@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: MPL-2.0 */
 
 import type { ExamComposition, ExamRule } from "../rules";
-import type { Question } from "../types";
+import type { Bank, Question } from "../types";
 import { isCorrect } from "./questions";
 
 export type ExamScore = {
@@ -124,6 +124,8 @@ function trimCounts(
  * - every chapter gets `minPerChapter` questions, including at least
  *   `minMultiplesPerChapter` multiple-choice questions where available;
  * - at least `minImages` image questions;
+ * - at least `minNewLevel` questions introduced at `level`, when the bank
+ *   carries `level` metadata and the supply allows it;
  * - remaining slots are proportional to each chapter's supply;
  * - singles run before multiples, with each group shuffled.
  *
@@ -134,6 +136,7 @@ export function buildExamPaper(
   rule: ExamRule,
   composition: ExamComposition,
   randomize: <T>(items: T[]) => T[] = identity,
+  level?: Bank,
 ): string[] {
   const pools = groupPools(questions);
   const chapters = [...pools.keys()];
@@ -191,24 +194,105 @@ export function buildExamPaper(
     ),
   );
 
+  const quotaOf = (
+    counts: Record<string, number>,
+    extras: Record<string, number>,
+    chapter: string,
+  ): number => counts[chapter] + (extras[chapter] ?? 0);
+
+  // Images are mandatory, so draw them first; those of the target level also
+  // count toward the new-level floor.
+  const imagesByChapter = new Map<string, Question[]>();
+  for (const chapter of chapters) {
+    const pool = pools.get(chapter)!;
+    const imageCount = Math.min(
+      imageCounts[chapter] ?? 0,
+      quotaOf(singleCounts, singleExtra, chapter),
+    );
+    imagesByChapter.set(chapter, randomize(pool.images).slice(0, imageCount));
+  }
+
+  const isNewLevel = (question: Question): boolean =>
+    Boolean(level) && question.level === level;
+  const newImages = chapters.reduce(
+    (total, chapter) => total + imagesByChapter.get(chapter)!.filter(isNewLevel).length,
+    0,
+  );
+
+  // Reserve the rest of the new-level floor per chapter and type, capped by
+  // the slots the images leave behind.
+  const capacities: Record<string, number> = {};
+  for (const chapter of chapters) {
+    const pool = pools.get(chapter)!;
+    const chosen = imagesByChapter.get(chapter)!;
+    const chosenKeys = new Set(chosen.map((question) => question.key));
+    capacities[`${chapter}|single`] = Math.min(
+      pool.singles.filter((question) => isNewLevel(question) && !chosenKeys.has(question.key))
+        .length,
+      quotaOf(singleCounts, singleExtra, chapter) - chosen.length,
+    );
+    capacities[`${chapter}|multiple`] = Math.min(
+      pool.multiples.filter(isNewLevel).length,
+      quotaOf(multipleCounts, multipleExtra, chapter),
+    );
+  }
+  const newQuota = allocate(
+    Math.max(0, (level ? composition.minNewLevel : 0) - newImages),
+    capacities,
+  );
+
   const selectedSingles: Question[] = [];
   const selectedMultiples: Question[] = [];
   for (const chapter of chapters) {
     const pool = pools.get(chapter)!;
-    const singleCount = singleCounts[chapter] + (singleExtra[chapter] ?? 0);
-    const multipleCount = multipleCounts[chapter] + (multipleExtra[chapter] ?? 0);
-    const imageCount = Math.min(imageCounts[chapter] ?? 0, singleCount);
+    const singleCount = quotaOf(singleCounts, singleExtra, chapter);
+    const multipleCount = quotaOf(multipleCounts, multipleExtra, chapter);
+    const chosenImages = imagesByChapter.get(chapter)!;
+    const chosenKeys = new Set(chosenImages.map((question) => question.key));
 
-    const chosenImages = randomize(pool.images).slice(0, imageCount);
-    const chosenImageKeys = new Set(chosenImages.map((question) => question.key));
-    const otherSingles = randomize(
-      pool.singles.filter((question) => !chosenImageKeys.has(question.key)),
+    const newSingles = Math.min(
+      newQuota[`${chapter}|single`] ?? 0,
+      singleCount - chosenImages.length,
     );
+    const pickedSingles = randomize(
+      pool.singles.filter((question) => isNewLevel(question) && !chosenKeys.has(question.key)),
+    ).slice(0, newSingles);
+    for (const question of pickedSingles) chosenKeys.add(question.key);
+    // Meeting the floor is enough: fill the remaining slots with inherited
+    // questions first, so a new-heavy chapter cannot swallow the paper.
+    const remainingSingles = pool.singles.filter(
+      (question) => !chosenKeys.has(question.key),
+    );
+    const otherSingles = [
+      ...randomize(remainingSingles.filter((question) => !isNewLevel(question))),
+      ...randomize(remainingSingles.filter(isNewLevel)),
+    ];
     selectedSingles.push(
       ...chosenImages,
-      ...otherSingles.slice(0, singleCount - chosenImages.length),
+      ...pickedSingles,
+      ...otherSingles.slice(0, singleCount - chosenImages.length - pickedSingles.length),
     );
-    selectedMultiples.push(...randomize(pool.multiples).slice(0, multipleCount));
+
+    const newMultiples = Math.min(
+      newQuota[`${chapter}|multiple`] ?? 0,
+      multipleCount,
+    );
+    const pickedMultiples = randomize(pool.multiples.filter(isNewLevel)).slice(
+      0,
+      newMultiples,
+    );
+    const pickedKeys = new Set(pickedMultiples.map((question) => question.key));
+    const remainingMultiples = pool.multiples.filter(
+      (question) => !pickedKeys.has(question.key),
+    );
+    const otherMultiples = [
+      ...randomize(remainingMultiples.filter((question) => !isNewLevel(question))),
+      ...randomize(remainingMultiples.filter(isNewLevel)),
+    ];
+    selectedMultiples.push(
+      ...pickedMultiples,
+      ...otherMultiples.slice(0, multipleCount - pickedMultiples.length),
+    );
   }
 
   // If a chapter ran out of capacity, fill the remaining slots from the rest

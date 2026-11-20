@@ -14,9 +14,24 @@ describe("fixed exam blueprint", () => {
   });
 
   it("matches the composition floors", () => {
-    expect(COMPOSITION.A).toEqual({ minImages: 1, minPerChapter: 2, minMultiplesPerChapter: 1 });
-    expect(COMPOSITION.B).toEqual({ minImages: 2, minPerChapter: 2, minMultiplesPerChapter: 1 });
-    expect(COMPOSITION.C).toEqual({ minImages: 4, minPerChapter: 2, minMultiplesPerChapter: 1 });
+    expect(COMPOSITION.A).toEqual({
+      minImages: 1,
+      minPerChapter: 2,
+      minMultiplesPerChapter: 1,
+      minNewLevel: 0,
+    });
+    expect(COMPOSITION.B).toEqual({
+      minImages: 2,
+      minPerChapter: 2,
+      minMultiplesPerChapter: 1,
+      minNewLevel: 30,
+    });
+    expect(COMPOSITION.C).toEqual({
+      minImages: 4,
+      minPerChapter: 2,
+      minMultiplesPerChapter: 1,
+      minNewLevel: 27,
+    });
   });
 
   it.each(["A", "B", "C"] as Bank[])(
@@ -28,8 +43,10 @@ describe("fixed exam blueprint", () => {
       const questions: Question[] = [];
       let imagesLeft = composition.minImages;
 
-      // Enough supply per chapter that the exact blueprint counts always fit.
+      // Enough supply per chapter that the exact blueprint counts always fit;
+      // chapters 2-4 carry the level's own material, 1 and 5 are inherited.
       for (const chapter of chapters) {
+        const level = chapter === "1" || chapter === "5" ? "A" : bank;
         for (let index = 0; index < 30; index += 1) {
           const key = `s-${chapter}-${index}`;
           const isImage = imagesLeft > 0 && (chapter === "3" || chapter === "4");
@@ -38,6 +55,7 @@ describe("fixed exam blueprint", () => {
             makeQuestion({
               key,
               section: `${chapter}.1.1`,
+              level,
               imageUrl: isImage ? `images/${key}.jpg` : null,
             }),
           );
@@ -49,17 +67,19 @@ describe("fixed exam blueprint", () => {
               section: `${chapter}.1.1`,
               type: "multiple",
               answer_keys: [1, 2],
+              level,
             }),
           );
         }
       }
 
-      const order = buildExamPaper(questions, rule, composition, identity);
+      const order = buildExamPaper(questions, rule, composition, identity, bank);
       const byKey = new Map(questions.map((item) => [item.key, item]));
       const counts = { single: 0, multiple: 0 };
       const chapterCounts: Record<string, { total: number; multiple: number }> = {};
       for (const chapter of chapters) chapterCounts[chapter] = { total: 0, multiple: 0 };
       let images = 0;
+      let newLevel = 0;
 
       for (const key of order) {
         const item = byKey.get(key);
@@ -68,6 +88,7 @@ describe("fixed exam blueprint", () => {
         chapterCounts[chapterOf(item)].total += 1;
         if (item.type === "multiple") chapterCounts[chapterOf(item)].multiple += 1;
         if (item.imageUrl) images += 1;
+        if (item.level === bank) newLevel += 1;
       }
 
       expect(order).toHaveLength(rule.total);
@@ -75,6 +96,7 @@ describe("fixed exam blueprint", () => {
       expect(counts).toEqual({ single: rule.singles, multiple: rule.multiples });
       expect(order.slice(0, rule.singles).every((key) => byKey.get(key)?.type === "single")).toBe(true);
       expect(images).toBeGreaterThanOrEqual(composition.minImages);
+      expect(newLevel).toBeGreaterThanOrEqual(composition.minNewLevel);
       for (const chapter of chapters) {
         expect(chapterCounts[chapter].total).toBeGreaterThanOrEqual(composition.minPerChapter);
         expect(chapterCounts[chapter].multiple).toBeGreaterThanOrEqual(

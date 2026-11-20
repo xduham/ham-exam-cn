@@ -121,6 +121,7 @@ export function useExamSession(bank: Bank): ExamSession {
         rule,
         compositionFor(bank),
         shuffle,
+        bank,
       ),
       answers: {},
       flags: {},

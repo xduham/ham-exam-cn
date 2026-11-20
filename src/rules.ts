@@ -37,13 +37,20 @@ export type ExamComposition = {
   minPerChapter: number;
   /** Minimum multiple-choice questions from every chapter that has any. */
   minMultiplesPerChapter: number;
+  /** Minimum questions first introduced at the level being examined. */
+  minNewLevel: number;
 };
 
-/** Sampling floors applied after the fixed paper counts. */
+/**
+ * Sampling floors applied after the fixed paper counts. `minNewLevel` keeps
+ * the target level's own questions from being diluted by inherited ones:
+ * B and C banks are cumulative, so proportional sampling would otherwise
+ * fill only about 26 and 14 slots with their new material.
+ */
 export const COMPOSITION: Record<Bank, ExamComposition> = {
-  A: { minImages: 1, minPerChapter: 2, minMultiplesPerChapter: 1 },
-  B: { minImages: 2, minPerChapter: 2, minMultiplesPerChapter: 1 },
-  C: { minImages: 4, minPerChapter: 2, minMultiplesPerChapter: 1 },
+  A: { minImages: 1, minPerChapter: 2, minMultiplesPerChapter: 1, minNewLevel: 0 },
+  B: { minImages: 2, minPerChapter: 2, minMultiplesPerChapter: 1, minNewLevel: 30 },
+  C: { minImages: 4, minPerChapter: 2, minMultiplesPerChapter: 1, minNewLevel: 27 },
 };
 
 export function compositionFor(bank: Bank): ExamComposition {

@@ -23,7 +23,12 @@ function mapOf(items: Question[]): Map<string, Question> {
   return new Map(items.map((item) => [item.key, item]));
 }
 
-const noFloors = { minImages: 0, minPerChapter: 0, minMultiplesPerChapter: 0 };
+const noFloors = {
+  minImages: 0,
+  minPerChapter: 0,
+  minMultiplesPerChapter: 0,
+  minNewLevel: 0,
+};
 
 describe("buildExamPaper", () => {
   it("takes the configured counts with singles before multiples", () => {
@@ -51,6 +56,74 @@ describe("buildExamPaper", () => {
     }, noFloors, identity);
 
     expect(order).toEqual(["s1"]);
+  });
+});
+
+describe("new-level floor", () => {
+  const composition = {
+    minImages: 0,
+    minPerChapter: 2,
+    minMultiplesPerChapter: 1,
+    minNewLevel: 4,
+  };
+  const rule = { singles: 6, multiples: 3, total: 9, minutes: 40, pass: 7 };
+  const questions: Question[] = [
+    ...Array.from({ length: 8 }, (_, index) =>
+      makeQuestion({ key: `old-s${index}`, section: "1.1.1", level: "A" }),
+    ),
+    ...Array.from({ length: 8 }, (_, index) =>
+      makeQuestion({ key: `new-s${index}`, section: "2.1.1", level: "B" }),
+    ),
+    ...Array.from({ length: 2 }, (_, index) =>
+      makeQuestion({
+        key: `old-m${index}`,
+        section: "1.1.1",
+        type: "multiple",
+        answer_keys: [1, 2],
+        level: "A",
+      }),
+    ),
+    ...Array.from({ length: 4 }, (_, index) =>
+      makeQuestion({
+        key: `new-m${index}`,
+        section: "2.1.1",
+        type: "multiple",
+        answer_keys: [1, 2],
+        level: "B",
+      }),
+    ),
+  ];
+  const byKey = mapOf(questions);
+
+  function draw(minNewLevel: number): Question[] {
+    const order = buildExamPaper(
+      questions,
+      rule,
+      { ...composition, minNewLevel },
+      identity,
+      "B",
+    );
+    return order.map((key) => byKey.get(key)!);
+  }
+
+  it("reserves questions of the target level", () => {
+    const paper = draw(composition.minNewLevel);
+
+    expect(paper).toHaveLength(rule.total);
+    // A floor is a minimum: leftover chapter-2 slots can also land on new material.
+    expect(paper.filter((item) => item.level === "B").length).toBeGreaterThanOrEqual(
+      composition.minNewLevel,
+    );
+    expect(paper.filter((item) => item.type === "single")).toHaveLength(rule.singles);
+  });
+
+  it("caps the floor at the available supply", () => {
+    const paper = draw(99);
+
+    // Only the five new-level slots in chapter 2 can satisfy the floor.
+    expect(paper.filter((item) => item.level === "B")).toHaveLength(5);
+    expect(paper).toHaveLength(rule.total);
+    expect(paper.filter((item) => item.type === "multiple")).toHaveLength(rule.multiples);
   });
 });
 
