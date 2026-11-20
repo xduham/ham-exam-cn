@@ -5,6 +5,7 @@ import {
   orderedOptions,
   resolveExplanation,
 } from "../domain/questions";
+import { SHOW_EXPLANATIONS } from "../features";
 import type { Question } from "../types";
 
 type Props = {
@@ -13,21 +14,35 @@ type Props = {
 };
 
 export function ExplanationCard({ question, optionSeed }: Props) {
+  const mnemonic = question.mnemonic?.trim();
+  if (!SHOW_EXPLANATIONS && !mnemonic) return null;
+
   const options =
     typeof optionSeed === "number" ? orderedOptions(question, optionSeed) : question.options;
-  const explanation = question.explanation
-    ? resolveExplanation(question.explanation, options)
-    : undefined;
-  const mnemonic = question.mnemonic?.trim();
-  const answerLabels = displayAnswerKeys(question, options);
+  const explanation =
+    SHOW_EXPLANATIONS && question.explanation
+      ? resolveExplanation(question.explanation, options)
+      : undefined;
+  const answerLabels = SHOW_EXPLANATIONS ? displayAnswerKeys(question, options) : [];
 
   return (
-    <section className="card explanation" aria-label="答案解析">
+    <section
+      className="card explanation"
+      aria-label={SHOW_EXPLANATIONS ? "答案解析" : "助记"}
+    >
       <div className="explanation-head">
-        <h2 className="section-title">答案解析</h2>
-        <span className="badge badge-muted">{answerLabels.join("、")}</span>
+        <h2 className="section-title">{SHOW_EXPLANATIONS ? "答案解析" : "助记"}</h2>
+        {SHOW_EXPLANATIONS ? (
+          <span className="badge badge-muted">{answerLabels.join("、")}</span>
+        ) : null}
       </div>
-      {explanation ? <p>{explanation}</p> : <p className="muted">暂无解析。</p>}
+      {SHOW_EXPLANATIONS ? (
+        explanation ? (
+          <p>{explanation}</p>
+        ) : (
+          <p className="muted">暂无解析。</p>
+        )
+      ) : null}
       {mnemonic ? (
         <div className="mnemonic">
           <strong>助记：</strong>
