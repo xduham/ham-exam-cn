@@ -104,11 +104,24 @@ function main() {
   const summary = [];
   const errors = [];
 
+  // The I code is stable across levels. Its first appearance decides which
+  // level introduced the question; higher banks may reword it.
+  const csvByBank = new Map();
+  const codeLevels = new Map();
   for (const bank of BANKS) {
     const csv = readFileSync(path.join(dataDir, CSV_FILES[bank]), "utf8");
     const rows = parseCsv(csv);
     const header = rows.shift() || [];
     const idx = headerIndex(header);
+    csvByBank.set(bank, { rows, idx });
+    for (const row of rows) {
+      const code = (row[idx["I"]] || "").trim();
+      if (code && !codeLevels.has(code)) codeLevels.set(code, bank);
+    }
+  }
+
+  for (const bank of BANKS) {
+    const { rows, idx } = csvByBank.get(bank);
     const state = keyMap[bank];
     const seenIdentities = new Map();
     const out = [];
@@ -198,6 +211,8 @@ function main() {
         key,
         number: primaryJ || null,
         code: i || null,
+        section: p || null,
+        level: i ? (codeLevels.get(i) || bank) : bank,
         question: q,
         options,
         answer_keys: answerKeys,

@@ -67,6 +67,8 @@ export type PracticeState = {
 export type ExamState = {
   bank: Bank;
   order: string[];
+  /** Current question position; resuming an exam returns here. */
+  index: number;
   answers: Record<string, number[]>;
   flags: Record<string, boolean>;
   endAtMs: number;
@@ -120,6 +122,8 @@ export function loadExam(bank: Bank): ExamState | null {
   if (!hasNumericAnswers(state.answers)) return null;
   return {
     ...state,
+    // Older saves have no index; out-of-range values collapse to a valid one.
+    index: Math.max(0, Math.min(state.index ?? 0, state.order.length - 1)),
     answers: state.answers ?? {},
     flags: state.flags ?? {},
     optionSeed: typeof state.optionSeed === "number" ? state.optionSeed : 0,

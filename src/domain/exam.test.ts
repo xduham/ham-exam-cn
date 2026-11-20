@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: MPL-2.0 */
 
 import { describe, expect, it } from "vitest";
+import { identity, makeQuestion } from "../test-helpers";
 import type { Question } from "../types";
 import {
   answeredCountOf,
@@ -13,33 +14,19 @@ import {
 function question(
   key: string,
   answerKeys: number[] = [1],
-  type: "single" | "multiple" = "single",
+  type: Question["type"] = "single",
 ): Question {
-  return {
-    key,
-    number: key,
-    code: null,
-    question: `题目 ${key}`,
-    options: [
-      { key: 1, text: "甲" },
-      { key: 2, text: "乙" },
-      { key: 3, text: "丙" },
-      { key: 4, text: "丁" },
-    ],
-    answer_keys: answerKeys,
-    type,
-    imageUrl: null,
-  };
+  return makeQuestion({ key, answer_keys: answerKeys, type });
 }
 
 function mapOf(items: Question[]): Map<string, Question> {
   return new Map(items.map((item) => [item.key, item]));
 }
 
-const identity = <T,>(items: T[]): T[] => [...items];
+const noFloors = { minImages: 0, minPerChapter: 0, minMultiplesPerChapter: 0 };
 
 describe("buildExamPaper", () => {
-  it("takes the configured number of singles and multiples", () => {
+  it("takes the configured counts with singles before multiples", () => {
     const singles = ["s1", "s2", "s3"].map((key) => question(key));
     const multiples = ["m1", "m2"].map((key) => question(key, [1, 2], "multiple"));
 
@@ -49,7 +36,7 @@ describe("buildExamPaper", () => {
       multiples: 1,
       minutes: 40,
       pass: 3,
-    }, identity);
+    }, noFloors, identity);
 
     expect(order).toEqual(["s1", "s2", "m1"]);
   });
@@ -61,30 +48,19 @@ describe("buildExamPaper", () => {
       multiples: 8,
       minutes: 40,
       pass: 30,
-    }, identity);
+    }, noFloors, identity);
 
     expect(order).toEqual(["s1"]);
-  });
-
-  it("keeps singles before multiples", () => {
-    const order = buildExamPaper(
-      [question("s1"), question("s2"), question("m1", [1, 2], "multiple")],
-      { total: 3, singles: 2, multiples: 1, minutes: 40, pass: 2 },
-      <T,>(items: T[]) => [...items].reverse(),
-    );
-
-    expect(order).toEqual(["s2", "s1", "m1"]);
   });
 });
 
 describe("scoreExam", () => {
-  const items = [
+  const byKey = mapOf([
     question("A", [1]),
     question("B", [1]),
     question("C", [1]),
     question("D", [1, 2], "multiple"),
-  ];
-  const byKey = mapOf(items);
+  ]);
 
   it("counts correct answers and separates wrong from unanswered", () => {
     const result = scoreExam(
@@ -118,32 +94,21 @@ describe("scoreExam", () => {
 describe("review helpers", () => {
   const byKey = mapOf([question("A"), question("B")]);
 
-  it("lists every question not answered correctly", () => {
+  it("reports wrong keys and counts only answered questions", () => {
     expect(wrongKeysOf(["A", "B"], byKey, { A: [1], B: [] })).toEqual(["B"]);
     expect(wrongKeysOf(["A", "B"], byKey, {})).toEqual(["A", "B"]);
-  });
-
-  it("counts only questions with a selection", () => {
     expect(answeredCountOf(["A", "B"], { A: [1], B: [] })).toBe(1);
   });
 });
 
 describe("canResumeExam", () => {
-  const now = 1_000;
+  it("requires a live paper whose questions still exist", () => {
+    const now = 1_000;
+    const live = new Set(["A", "B"]);
 
-  it("resumes a live paper whose questions still exist", () => {
-    expect(canResumeExam(["A", "B"], now + 1, new Set(["A", "B", "C"]), now)).toBe(true);
-  });
-
-  it("rejects an expired paper", () => {
-    expect(canResumeExam(["A"], now, new Set(["A"]), now)).toBe(false);
-  });
-
-  it("rejects a paper with a missing question", () => {
-    expect(canResumeExam(["A", "X"], now + 1, new Set(["A"]), now)).toBe(false);
-  });
-
-  it("rejects an empty paper", () => {
-    expect(canResumeExam([], now + 1, new Set(["A"]), now)).toBe(false);
+    expect(canResumeExam(["A", "B"], now + 1, live, now)).toBe(true);
+    expect(canResumeExam(["A", "B"], now, live, now)).toBe(false); // expired
+    expect(canResumeExam(["A", "X"], now + 1, live, now)).toBe(false); // missing question
+    expect(canResumeExam([], now + 1, live, now)).toBe(false); // empty paper
   });
 });

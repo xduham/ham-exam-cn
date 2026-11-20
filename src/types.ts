@@ -13,6 +13,10 @@ export type Question = {
   key: string;
   number: string | null;
   code: string | null;
+  /** CSV P column, e.g. "1.2.3"; the first segment is the chapter. */
+  section?: string | null;
+  /** Earliest level whose bank contains this code: A, B or C. */
+  level?: Bank | null;
   question: string;
   options: QuestionOption[];
   answer_keys: number[];

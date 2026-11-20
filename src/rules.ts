@@ -30,6 +30,26 @@ export const RULES: Record<Bank, ExamRule> = {
   C: examRule(70, 20, 90, 70),
 };
 
+export type ExamComposition = {
+  /** Minimum number of image questions in one paper. */
+  minImages: number;
+  /** Minimum total questions from every chapter. */
+  minPerChapter: number;
+  /** Minimum multiple-choice questions from every chapter that has any. */
+  minMultiplesPerChapter: number;
+};
+
+/** Sampling floors applied after the fixed paper counts. */
+export const COMPOSITION: Record<Bank, ExamComposition> = {
+  A: { minImages: 1, minPerChapter: 2, minMultiplesPerChapter: 1 },
+  B: { minImages: 2, minPerChapter: 2, minMultiplesPerChapter: 1 },
+  C: { minImages: 4, minPerChapter: 2, minMultiplesPerChapter: 1 },
+};
+
+export function compositionFor(bank: Bank): ExamComposition {
+  return COMPOSITION[bank];
+}
+
 export const BANK_META: Record<Bank, { label: string; hint: string }> = {
   A: {
     label: "A 类",

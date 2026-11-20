@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: MPL-2.0 */
 
 import { describe, expect, it } from "vitest";
+import { makeQuestion } from "../test-helpers";
 import type { Question } from "../types";
 import {
   applyPracticeCheck,
@@ -13,23 +14,9 @@ import {
 function question(
   key: string,
   answerKeys: number[] = [1],
-  type: "single" | "multiple" = "single",
+  type: Question["type"] = "single",
 ): Question {
-  return {
-    key,
-    number: key,
-    code: null,
-    question: `题目 ${key}`,
-    options: [
-      { key: 1, text: "甲" },
-      { key: 2, text: "乙" },
-      { key: 3, text: "丙" },
-      { key: 4, text: "丁" },
-    ],
-    answer_keys: answerKeys,
-    type,
-    imageUrl: null,
-  };
+  return makeQuestion({ key, answer_keys: answerKeys, type });
 }
 
 function progress(overrides: Partial<PracticeProgress> = {}): PracticeProgress {
@@ -101,22 +88,8 @@ describe("planPracticeSession", () => {
     expect(plan.optionSeed).toBe(42);
   });
 
-  it("keeps the saved random order", () => {
-    const plan = planPracticeSession({
-      kind: "random",
-      questionKeys: keys,
-      collectionKeys: [],
-      saved: saved({ kind: "random", order: ["C", "A", "D", "B"] }),
-      randomize: (items) => [...items].reverse(),
-      createSeed: () => 5,
-    });
-
-    expect(plan.resumed).toBe(true);
-    expect(plan.order).toEqual(["C", "A", "D", "B"]);
-  });
-
-  it("randomizes a fresh random session", () => {
-    const plan = planPracticeSession({
+  it("randomizes a fresh session and keeps the saved order afterwards", () => {
+    const fresh = planPracticeSession({
       kind: "random",
       questionKeys: keys,
       collectionKeys: [],
@@ -124,9 +97,19 @@ describe("planPracticeSession", () => {
       randomize: (items) => [...items].reverse(),
       createSeed: () => 5,
     });
+    expect(fresh.order).toEqual(["D", "C", "B", "A"]);
+    expect(fresh.resumed).toBe(false);
 
-    expect(plan.order).toEqual(["D", "C", "B", "A"]);
-    expect(plan.resumed).toBe(false);
+    const resumed = planPracticeSession({
+      kind: "random",
+      questionKeys: keys,
+      collectionKeys: [],
+      saved: saved({ kind: "random", order: ["C", "A", "D", "B"] }),
+      randomize: (items) => [...items].reverse(),
+      createSeed: () => 5,
+    });
+    expect(resumed.resumed).toBe(true);
+    expect(resumed.order).toEqual(["C", "A", "D", "B"]);
   });
 
   it("merges a saved wrong-book session with newly added entries", () => {

@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: MPL-2.0 */
 
 import { describe, expect, it } from "vitest";
-import type { Question } from "../types";
+import { makeQuestion } from "../test-helpers";
 import {
   entryId,
   favoriteEntriesFor,
@@ -12,17 +12,8 @@ import {
   wrongEntriesFor,
 } from "./collections";
 
-function question(key: string, number: string | null = key): Question {
-  return {
-    key,
-    number,
-    code: null,
-    question: `题目 ${key}`,
-    options: [],
-    answer_keys: [1],
-    type: "single",
-    imageUrl: null,
-  };
+function question(key: string, number: string | null = key) {
+  return makeQuestion({ key, number, options: [] });
 }
 
 describe("wrong book", () => {

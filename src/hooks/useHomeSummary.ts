@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: MPL-2.0 */
 
+import { useMemo } from "react";
 import { ruleFor } from "../rules";
 import { isExamActive, loadExam, loadPractice } from "../storage";
 import { loadStats, practiceAccuracy } from "../stats";
@@ -13,22 +14,28 @@ import { useCollections } from "./useCollections";
  */
 export function useHomeSummary(bank: Bank) {
   const { wrongCount, favoriteCount } = useCollections(bank);
-  const practice = loadPractice(bank);
-  const exam = loadExam(bank);
-  const stats = loadStats()[bank];
+  // Home remounts on every route change, so one read per bank is enough and
+  // keeps the snapshot stable across re-renders.
+  const snapshot = useMemo(() => {
+    const practice = loadPractice(bank);
+    const exam = loadExam(bank);
+    return {
+      practice,
+      exam,
+      examActive: isExamActive(exam),
+      stats: loadStats()[bank],
+    };
+  }, [bank]);
   const practiceVisible = Boolean(
-    practice &&
-      (practice.kind !== "wrong" || wrongCount > 0) &&
-      (practice.kind !== "favorite" || favoriteCount > 0),
+    snapshot.practice &&
+      (snapshot.practice.kind !== "wrong" || wrongCount > 0) &&
+      (snapshot.practice.kind !== "favorite" || favoriteCount > 0),
   );
 
   return {
-    practice,
-    exam,
-    examActive: isExamActive(exam),
+    ...snapshot,
     practiceVisible,
-    stats,
-    accuracy: practiceAccuracy(stats),
+    accuracy: practiceAccuracy(snapshot.stats),
     rule: ruleFor(bank),
     wrongCount,
     favoriteCount,

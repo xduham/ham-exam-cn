@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { buildExamPaper, canResumeExam, scoreExam } from "../domain/exam";
-import { ruleFor } from "../rules";
+import { compositionFor, ruleFor } from "../rules";
 import { clearExam, loadExam, saveExam } from "../storage";
 import { recordExam } from "../stats";
 import type { Bank, Question } from "../types";
@@ -102,7 +102,7 @@ export function useExamSession(bank: Bank): ExamSession {
         order: saved.order,
         answers: saved.answers,
         flags: saved.flags,
-        index: 0,
+        index: saved.index,
         endAtMs: saved.endAtMs,
         startedAt: saved.startedAt,
         optionSeed: saved.optionSeed || randomSeed(),
@@ -116,7 +116,12 @@ export function useExamSession(bank: Bank): ExamSession {
     const rule = ruleFor(bank);
     const next: Session = {
       bank,
-      order: buildExamPaper(bankResource.questions, rule, shuffle),
+      order: buildExamPaper(
+        bankResource.questions,
+        rule,
+        compositionFor(bank),
+        shuffle,
+      ),
       answers: {},
       flags: {},
       index: 0,
@@ -134,6 +139,7 @@ export function useExamSession(bank: Bank): ExamSession {
     saveExam({
       bank,
       order: paper.order,
+      index: paper.index,
       answers: paper.answers,
       flags: paper.flags,
       endAtMs: paper.endAtMs,
@@ -179,16 +185,6 @@ export function useExamSession(bank: Bank): ExamSession {
     if (!paper || result) return;
     if (Date.now() >= paper.endAtMs) submit(true);
   }, [now, paper, result, submit]);
-
-  useEffect(() => {
-    if (result) return;
-    const handler = (event: BeforeUnloadEvent) => {
-      event.preventDefault();
-      event.returnValue = "";
-    };
-    window.addEventListener("beforeunload", handler);
-    return () => window.removeEventListener("beforeunload", handler);
-  }, [result]);
 
   const active = paper && paper.bank === bank ? paper : null;
   const currentKey = active ? (active.order[active.index] ?? null) : null;
@@ -260,6 +256,7 @@ export function useExamSession(bank: Bank): ExamSession {
     saveExam({
       bank,
       order: current.order,
+      index: current.index,
       answers: current.answers,
       flags: current.flags,
       endAtMs: current.endAtMs,
