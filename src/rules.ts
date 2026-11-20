@@ -39,6 +39,8 @@ export type ExamComposition = {
   minMultiplesPerChapter: number;
   /** Minimum questions first introduced at the level being examined. */
   minNewLevel: number;
+  /** Maximum multiple-choice questions whose answer is all four options. */
+  maxFourAnswerMultiples: number;
 };
 
 /**
@@ -48,9 +50,27 @@ export type ExamComposition = {
  * fill only about 26 and 14 slots with their new material.
  */
 export const COMPOSITION: Record<Bank, ExamComposition> = {
-  A: { minImages: 1, minPerChapter: 2, minMultiplesPerChapter: 1, minNewLevel: 0 },
-  B: { minImages: 2, minPerChapter: 2, minMultiplesPerChapter: 1, minNewLevel: 30 },
-  C: { minImages: 4, minPerChapter: 2, minMultiplesPerChapter: 1, minNewLevel: 27 },
+  A: {
+    minImages: 1,
+    minPerChapter: 2,
+    minMultiplesPerChapter: 1,
+    minNewLevel: 0,
+    maxFourAnswerMultiples: 3,
+  },
+  B: {
+    minImages: 2,
+    minPerChapter: 2,
+    minMultiplesPerChapter: 1,
+    minNewLevel: 30,
+    maxFourAnswerMultiples: 5,
+  },
+  C: {
+    minImages: 4,
+    minPerChapter: 2,
+    minMultiplesPerChapter: 1,
+    minNewLevel: 27,
+    maxFourAnswerMultiples: 8,
+  },
 };
 
 export function compositionFor(bank: Bank): ExamComposition {

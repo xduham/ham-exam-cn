@@ -316,6 +316,42 @@ export function buildExamPaper(
   fill(selectedSingles, "single", rule.singles);
   fill(selectedMultiples, "multiple", rule.multiples);
 
+  // All-four-correct multiples are the easiest to guess, so keep them at or
+  // below the cap. Swaps stay inside one chapter (chapter quotas unchanged),
+  // prefer inherited questions, and never drop below the new-level floor.
+  const isFourAnswer = (question: Question): boolean => question.answer_keys.length === 4;
+  let fourAnswerCount = selectedMultiples.filter(isFourAnswer).length;
+  if (fourAnswerCount > composition.maxFourAnswerMultiples) {
+    let newLevelCount =
+      selectedSingles.filter(isNewLevel).length +
+      selectedMultiples.filter(isNewLevel).length;
+    const candidates = selectedMultiples
+      .filter(isFourAnswer)
+      .sort((left, right) => Number(isNewLevel(left)) - Number(isNewLevel(right)));
+
+    for (const candidate of candidates) {
+      if (fourAnswerCount <= composition.maxFourAnswerMultiples) break;
+      const replacement = randomize(
+        pools.get(chapterOf(candidate))!.multiples.filter(
+          (question) =>
+            !isFourAnswer(question) &&
+            !selectedKeys.has(question.key) &&
+            (!isNewLevel(candidate) ||
+              isNewLevel(question) ||
+              newLevelCount - 1 >= composition.minNewLevel),
+        ),
+      )[0];
+      if (!replacement) continue;
+
+      selectedMultiples[selectedMultiples.indexOf(candidate)] = replacement;
+      selectedKeys.delete(candidate.key);
+      selectedKeys.add(replacement.key);
+      fourAnswerCount -= 1;
+      if (isNewLevel(candidate) && !isNewLevel(replacement)) newLevelCount -= 1;
+      if (!isNewLevel(candidate) && isNewLevel(replacement)) newLevelCount += 1;
+    }
+  }
+
   return [...randomize(selectedSingles), ...randomize(selectedMultiples)].map(
     (question) => question.key,
   );

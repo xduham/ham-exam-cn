@@ -19,18 +19,21 @@ describe("fixed exam blueprint", () => {
       minPerChapter: 2,
       minMultiplesPerChapter: 1,
       minNewLevel: 0,
+      maxFourAnswerMultiples: 3,
     });
     expect(COMPOSITION.B).toEqual({
       minImages: 2,
       minPerChapter: 2,
       minMultiplesPerChapter: 1,
       minNewLevel: 30,
+      maxFourAnswerMultiples: 5,
     });
     expect(COMPOSITION.C).toEqual({
       minImages: 4,
       minPerChapter: 2,
       minMultiplesPerChapter: 1,
       minNewLevel: 27,
+      maxFourAnswerMultiples: 8,
     });
   });
 

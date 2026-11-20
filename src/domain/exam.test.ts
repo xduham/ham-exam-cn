@@ -28,6 +28,7 @@ const noFloors = {
   minPerChapter: 0,
   minMultiplesPerChapter: 0,
   minNewLevel: 0,
+  maxFourAnswerMultiples: 99,
 };
 
 describe("buildExamPaper", () => {
@@ -65,6 +66,7 @@ describe("new-level floor", () => {
     minPerChapter: 2,
     minMultiplesPerChapter: 1,
     minNewLevel: 4,
+    maxFourAnswerMultiples: 99,
   };
   const rule = { singles: 6, multiples: 3, total: 9, minutes: 40, pass: 7 };
   const questions: Question[] = [
@@ -124,6 +126,41 @@ describe("new-level floor", () => {
     expect(paper.filter((item) => item.level === "B")).toHaveLength(5);
     expect(paper).toHaveLength(rule.total);
     expect(paper.filter((item) => item.type === "multiple")).toHaveLength(rule.multiples);
+  });
+});
+
+describe("four-answer multiples", () => {
+  it("swaps within the chapter to stay under the cap", () => {
+    const questions = [
+      ...Array.from({ length: 4 }, (_, index) =>
+        makeQuestion({
+          key: `four-${index}`,
+          section: "1.1.1",
+          type: "multiple",
+          answer_keys: [1, 2, 3, 4],
+        }),
+      ),
+      ...Array.from({ length: 4 }, (_, index) =>
+        makeQuestion({
+          key: `two-${index}`,
+          section: "1.1.1",
+          type: "multiple",
+          answer_keys: [1, 2],
+        }),
+      ),
+    ];
+    const order = buildExamPaper(
+      questions,
+      { singles: 0, multiples: 4, total: 4, minutes: 10, pass: 3 },
+      { ...noFloors, maxFourAnswerMultiples: 1 },
+      identity,
+    );
+    const byKey = mapOf(questions);
+    const paper = order.map((key) => byKey.get(key)!);
+
+    expect(paper).toHaveLength(4);
+    expect(paper.filter((item) => item.answer_keys.length === 4)).toHaveLength(1);
+    expect(paper.filter((item) => item.answer_keys.length === 2)).toHaveLength(3);
   });
 });
 
